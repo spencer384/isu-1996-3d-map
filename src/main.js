@@ -124,8 +124,8 @@ orbitControls.mouseButtons = {
   RIGHT: THREE.MOUSE.ROTATE
 };
 orbitControls.touches = {
-  ONE: THREE.TOUCH.ROTATE,
-  TWO: THREE.TOUCH.DOLLY_PAN
+  ONE: THREE.TOUCH.PAN,
+  TWO: THREE.TOUCH.DOLLY_ROTATE
 };
 orbitControls.target.set(6, 16, 68);
 
