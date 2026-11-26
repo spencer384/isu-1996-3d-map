@@ -123,13 +123,41 @@ orbitControls.mouseButtons = {
   MIDDLE: THREE.MOUSE.DOLLY,
   RIGHT: THREE.MOUSE.ROTATE
 };
+orbitControls.touches = {
+  ONE: THREE.TOUCH.ROTATE,
+  TWO: THREE.TOUCH.DOLLY_PAN
+};
 orbitControls.target.set(6, 16, 68);
 
 const walkControls = new PointerLockControls(camera, document.body);
+const isMobileQuery = window.matchMedia('(max-width: 900px)');
+const isTouchDevice = () => ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
 let mode = 'orbit'; // 'orbit' | 'walk'
 let showLabels = true;
 let activeLandmarkId = 'panorama';
 let flyAnim = null;
+
+const sidebar = document.getElementById('sidebar');
+const toggleSidebarBtn = document.getElementById('toggle-sidebar');
+const mobileBackdrop = document.getElementById('mobile-backdrop');
+const minimapBox = document.getElementById('minimap-box');
+const btnMinimapToggle = document.getElementById('btn-minimap-toggle');
+const titleCard = document.getElementById('title-card');
+const btnMobileAbout = document.getElementById('btn-mobile-about');
+const mobileWalkPad = document.getElementById('mobile-walk-pad');
+
+function setSidebarCollapsed(collapsed) {
+  sidebar.classList.toggle('collapsed', collapsed);
+  toggleSidebarBtn.classList.toggle('collapsed', collapsed);
+  infoCard.classList.toggle('sidebar-collapsed', collapsed);
+  if (isMobileQuery.matches) {
+    toggleSidebarBtn.textContent = '📍 地標導覽 (16)';
+    mobileBackdrop.classList.toggle('visible', !collapsed);
+  } else {
+    toggleSidebarBtn.textContent = collapsed ? '▶ 導覽' : '◀ 導覽';
+    mobileBackdrop.classList.remove('visible');
+  }
+}
 
 function flyToLandmark(lm) {
   activeLandmarkId = lm.id;
@@ -149,6 +177,10 @@ function flyToLandmark(lm) {
   infoTitle.textContent = lm.name;
   infoDesc.textContent = lm.desc;
   infoCard.classList.remove('hidden');
+
+  if (isMobileQuery.matches) {
+    setSidebarCollapsed(true);
+  }
 
   updateActiveUI();
 }
@@ -241,6 +273,15 @@ function setMode(newMode) {
     orbitControls.autoRotate = false;
     btnAuto.classList.remove('active');
     walkHint.style.display = 'block';
+    if (isTouchDevice() || isMobileQuery.matches) {
+      walkHint.innerHTML = '漫步模式：單指滑動畫面旋轉視角，左下角方向鍵移動';
+      mobileWalkPad.style.display = 'grid';
+      infoCard.classList.add('hidden');
+      setSidebarCollapsed(true);
+    } else {
+      walkHint.innerHTML = '漫步模式：點擊畫面鎖定視角，使用 <b>W A S D</b> 移動、<b>Shift</b> 加速、<b>Esc</b> 解除滑鼠鎖定';
+      mobileWalkPad.style.display = 'none';
+    }
     if (camera.position.y > 40) {
       const y = getTerrainHeight(0, -60) + 2.0;
       camera.position.set(0, y, -60);
@@ -250,19 +291,66 @@ function setMode(newMode) {
     if (document.pointerLockElement) document.exitPointerLock();
     orbitControls.enabled = true;
     walkHint.style.display = 'none';
+    mobileWalkPad.style.display = 'none';
   }
 }
 
 btnOrbit.addEventListener('click', () => setMode('orbit'));
 btnWalk.addEventListener('click', () => {
   setMode('walk');
-  walkControls.lock();
-});
-renderer.domElement.addEventListener('click', () => {
-  if (mode === 'walk' && !walkControls.isLocked) {
+  if (!isTouchDevice() && !isMobileQuery.matches) {
     walkControls.lock();
   }
 });
+renderer.domElement.addEventListener('click', () => {
+  if (mode === 'walk' && !walkControls.isLocked && !isTouchDevice() && !isMobileQuery.matches) {
+    walkControls.lock();
+  }
+});
+
+// Touch drag look-around when in mobile walk mode
+let walkTouchId = null;
+let lastTouchX = 0;
+let lastTouchY = 0;
+const walkEuler = new THREE.Euler(0, 0, 0, 'YXZ');
+
+renderer.domElement.addEventListener('touchstart', (e) => {
+  if (mode !== 'walk') return;
+  const t = e.changedTouches[0];
+  walkTouchId = t.identifier;
+  lastTouchX = t.clientX;
+  lastTouchY = t.clientY;
+}, { passive: true });
+
+renderer.domElement.addEventListener('touchmove', (e) => {
+  if (mode !== 'walk' || walkTouchId === null) return;
+  for (let i = 0; i < e.changedTouches.length; i++) {
+    const t = e.changedTouches[i];
+    if (t.identifier === walkTouchId) {
+      const dx = t.clientX - lastTouchX;
+      const dy = t.clientY - lastTouchY;
+      lastTouchX = t.clientX;
+      lastTouchY = t.clientY;
+      walkEuler.setFromQuaternion(camera.quaternion);
+      walkEuler.y -= dx * 0.0045;
+      walkEuler.x = Math.max(-Math.PI * 0.42, Math.min(Math.PI * 0.42, walkEuler.x - dy * 0.0045));
+      camera.quaternion.setFromEuler(walkEuler);
+      break;
+    }
+  }
+}, { passive: true });
+
+const endWalkTouch = (e) => {
+  if (walkTouchId === null) return;
+  for (let i = 0; i < e.changedTouches.length; i++) {
+    if (e.changedTouches[i].identifier === walkTouchId) {
+      walkTouchId = null;
+      break;
+    }
+  }
+};
+renderer.domElement.addEventListener('touchend', endWalkTouch, { passive: true });
+renderer.domElement.addEventListener('touchcancel', endWalkTouch, { passive: true });
 
 btnPanorama.addEventListener('click', () => {
   flyToLandmark(LANDMARKS_1996[0]);
@@ -380,6 +468,22 @@ btnLabels.addEventListener('click', () => {
   labelsLayer.style.display = showLabels ? 'block' : 'none';
 });
 
+let showMinimap = !isMobileQuery.matches;
+function syncMinimapVisibility() {
+  minimapBox.classList.toggle('hidden-map', !showMinimap);
+  btnMinimapToggle.classList.toggle('active', showMinimap);
+}
+
+btnMinimapToggle.addEventListener('click', () => {
+  showMinimap = !showMinimap;
+  syncMinimapVisibility();
+});
+
+btnMobileAbout.addEventListener('click', () => {
+  const expanded = titleCard.classList.toggle('expanded');
+  btnMobileAbout.textContent = expanded ? '收合 ▴' : '簡介 ▾';
+});
+
 btnAuto.addEventListener('click', () => {
   if (mode === 'walk') setMode('orbit');
   orbitControls.autoRotate = !orbitControls.autoRotate;
@@ -387,12 +491,17 @@ btnAuto.addEventListener('click', () => {
   btnAuto.classList.toggle('active', orbitControls.autoRotate);
 });
 
-const sidebar = document.getElementById('sidebar');
-const toggleSidebarBtn = document.getElementById('toggle-sidebar');
 toggleSidebarBtn.addEventListener('click', () => {
-  const collapsed = sidebar.classList.toggle('collapsed');
-  toggleSidebarBtn.classList.toggle('collapsed', collapsed);
-  toggleSidebarBtn.textContent = collapsed ? '▶ 導覽' : '◀ 導覽';
+  const nextCollapsed = !sidebar.classList.contains('collapsed');
+  setSidebarCollapsed(nextCollapsed);
+});
+
+document.getElementById('sidebar-close-mobile').addEventListener('click', () => {
+  setSidebarCollapsed(true);
+});
+
+mobileBackdrop.addEventListener('click', () => {
+  setSidebarCollapsed(true);
 });
 
 document.getElementById('info-close').addEventListener('click', () => {
@@ -502,13 +611,51 @@ document.getElementById('btn-share').addEventListener('click', async () => {
 const initEra = Number(new URLSearchParams(window.location.search).get('era'));
 setEra(ERA_DATA[initEra] ? initEra : 1996);
 
-// 9. Keyboard Walk Movement
+// Apply responsive defaults on load & breakpoint change
+function applyResponsiveDefaults(isMobile) {
+  if (isMobile) {
+    setSidebarCollapsed(true);
+    infoCard.classList.add('hidden');
+    showMinimap = false;
+    syncMinimapVisibility();
+    camera.fov = 60;
+  } else {
+    setSidebarCollapsed(false);
+    infoCard.classList.remove('hidden');
+    showMinimap = true;
+    syncMinimapVisibility();
+    camera.fov = 52;
+  }
+  camera.updateProjectionMatrix();
+}
+
+applyResponsiveDefaults(isMobileQuery.matches);
+isMobileQuery.addEventListener('change', (e) => applyResponsiveDefaults(e.matches));
+
+// 9. Keyboard & Mobile Pad Walk Movement
 const keys = {};
 window.addEventListener('keydown', (e) => { keys[e.code] = true; });
 window.addEventListener('keyup', (e) => { keys[e.code] = false; });
 
+document.querySelectorAll('.pad-btn').forEach((btn) => {
+  const keyCode = btn.dataset.key;
+  const press = (e) => {
+    e.preventDefault();
+    keys[keyCode] = true;
+  };
+  const release = (e) => {
+    e.preventDefault();
+    keys[keyCode] = false;
+  };
+  btn.addEventListener('pointerdown', press);
+  btn.addEventListener('pointerup', release);
+  btn.addEventListener('pointerleave', release);
+  btn.addEventListener('pointercancel', release);
+});
+
 // 10. Minimap Drawing
 function drawMinimap() {
+  if (!showMinimap) return;
   const w = minimapCanvas.width;
   const h = minimapCanvas.height;
   minimapCtx.clearRect(0, 0, w, h);
@@ -644,9 +791,19 @@ function animate() {
     animatedParts.beaconLight.intensity = nightFactor * pulse * 14;
   }
 
-  // Update 2D projected landmark pins
+  // Update 2D projected landmark pins (with anti-overlap filtering on small mobile screens)
   if (showLabels) {
-    LANDMARKS_1996.forEach((lm) => {
+    const isMobile = isMobileQuery.matches;
+    const placedBoxes = [];
+
+    // Process active landmark first so it is always visible on mobile
+    const orderedLandmarks = [...LANDMARKS_1996].sort((a, b) => {
+      if (a.id === activeLandmarkId) return -1;
+      if (b.id === activeLandmarkId) return 1;
+      return 0;
+    });
+
+    orderedLandmarks.forEach((lm) => {
       const pin = pinElements.get(lm.id);
       if (!pin) return;
       projVec.set(lm.pos[0], lm.pos[1] + 5, lm.pos[2]);
@@ -655,14 +812,32 @@ function animate() {
       if (projVec.z > 1 || projVec.z < -1) {
         pin.style.opacity = '0';
         pin.style.pointerEvents = 'none';
-      } else {
-        const x = (projVec.x * 0.5 + 0.5) * window.innerWidth;
-        const y = (-projVec.y * 0.5 + 0.5) * window.innerHeight;
-        pin.style.left = `${x}px`;
-        pin.style.top = `${y}px`;
-        pin.style.opacity = '1';
-        pin.style.pointerEvents = 'auto';
+        return;
       }
+
+      const x = (projVec.x * 0.5 + 0.5) * window.innerWidth;
+      const y = (-projVec.y * 0.5 + 0.5) * window.innerHeight;
+      pin.style.left = `${x}px`;
+      pin.style.top = `${y}px`;
+
+      if (isMobile && lm.id !== activeLandmarkId) {
+        // Avoid overlapping top bar or other pins on compact phone screens
+        if (y < 105 || y > window.innerHeight - 48) {
+          pin.style.opacity = '0';
+          pin.style.pointerEvents = 'none';
+          return;
+        }
+        const overlaps = placedBoxes.some((b) => Math.abs(b.x - x) < 74 && Math.abs(b.y - y) < 26);
+        if (overlaps) {
+          pin.style.opacity = '0';
+          pin.style.pointerEvents = 'none';
+          return;
+        }
+      }
+
+      placedBoxes.push({ x, y });
+      pin.style.opacity = '1';
+      pin.style.pointerEvents = 'auto';
     });
   }
 
