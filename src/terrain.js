@@ -58,6 +58,24 @@ export function getTerrainHeight(x, z) {
     }
   };
 
+  // 旋轉矩形平台（貼合斜向排列建築如男宿 1F 地坪）
+  const flattenRotatedRect = (cx, cz, hx, hz, yaw, targetH, feather = 12) => {
+    const cosY = Math.cos(yaw);
+    const sinY = Math.sin(yaw);
+    const dx0 = x - cx;
+    const dz0 = z - cz;
+    const lx = dx0 * cosY - dz0 * sinY;
+    const lz = dx0 * sinY + dz0 * cosY;
+    const dx = Math.max(0, Math.abs(lx) - hx);
+    const dz = Math.max(0, Math.abs(lz) - hz);
+    const d = Math.hypot(dx, dz);
+    if (d <= 0) {
+      h = targetH;
+    } else if (d < feather) {
+      h = THREE.MathUtils.lerp(targetH, h, smoothstep(0, feather, d));
+    }
+  };
+
   flatten(-6, -70, 30, 30, 3.0, 20);      // 1. 校門口 & 警衛室
   flatten(50, -8, 48, 30, 8.5, 18);       // 2. 泳池 & 活動中心 & 前廣場
   flatten(78, -36, 22, 18, 7.5, 16);      // 2b. 體育館平台 (1996施工 -> 2001完工)
@@ -65,12 +83,13 @@ export function getTerrainHeight(x, z) {
   flatten(92, 48, 30, 26, 14.0, 20);      // 4. 教學大樓 (口字型四合院)
   flatten(26, 86, 18, 16, 17.5, 18);      // 5. 紅色舊水塔草坡
   flatten(12, 68, 16, 10, 13.8, 14);      // 6. 125 階起點道路平台
-  flatten(8, 114, 30, 21, 21.5, 15);      // 7. 行政大樓（綜合大樓）與前廣場
-  flatten(56, 118, 26, 20, 21.5, 18);     // 8. 科技大樓
-  flatten(78, 148, 24, 22, 22.5, 18);     // 9. 義守大學圖書館
-  flatten(-38, 126, 26, 22, 19.5, 18);    // 10. 男宿（1996 高層）
-  flatten(-76, 112, 28, 24, 18.0, 20);    // 11. 女宿（1996 低層）
-  flattenRect(6, 167, 52, 35, 23.0, 14);  // 12. 操場與南側升旗台（矩形平台）
+  flatten(8, 114, 30, 17, 21.5, 13);      // 7. 行政大樓（綜合大樓）與前廣場
+  flatten(56, 118, 26, 18, 21.5, 14);     // 8. 科技大樓
+  flatten(82, 148, 20, 18, 22.5, 12);     // 9. 義守大學圖書館
+  flatten(-76, 112, 28, 24, 18.0, 18);    // 11. 女宿（1996 低層）
+  flattenRotatedRect(-39, 127, 21.0, 7.5, 0.52, 19.5, 13); // 10a. 男宿 1F 基地（19.5m）與外圍草坡
+  flattenRect(6, 181, 50, 32, 33.5, 12);  // 12. 操場與南側升旗台（33.5m 正對男宿 6 樓，中間形成 1F→6F 山坡）
+  flattenRotatedRect(-39, 127, 20.5, 7.0, 0.52, 19.5, 4);  // 10b. 確保男宿雙棟四角皆平整落在 1F 地坪
 
   // 13. 125 階長樓梯坡道：地面沿階梯斜面下切，避免草坡穿出階梯
   {
@@ -348,8 +367,9 @@ function addCampusFoliage(scene, texLib) {
     if (Math.abs(x - 8) < 27 && z > 93 && z < 136) return true;         // 行政大樓（綜合大樓）與前廣場
     if (Math.abs(x - 56) < 25 && Math.abs(z - 118) < 20) return true;   // 科技大樓
     if (Math.abs(x - 78) < 20 && Math.abs(z - 148) < 20) return true;   // 圖書館
-    if (Math.abs(x - 6) < 57 && Math.abs(z - 167) < 38) return true;    // 操場、南側升旗台與拔河
+    if (Math.abs(x - 6) < 57 && Math.abs(z - 180) < 39) return true;    // 操場、南側升旗台與拔河
     if (Math.abs(x + 39) < 25 && Math.abs(z - 127) < 23) return true;   // 男宿 (1996 高層)
+    if (x > -52 && x < -22 && z > 128 && z < 156) return true;          // 男宿 6F 至操場連結橋廊道（避開樹冠穿模）
     if (Math.abs(x + 76) < 26 && Math.abs(z - 108) < 26) return true;   // 女宿 (1996 低層)
     return false;
   };

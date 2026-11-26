@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { getTerrainHeight, STAIR_LINE, roadPoint } from './terrain.js';
+import { getTerrainHeight, STAIR_LINE, roadPoint } from './terrain.js?v=20261127c';
 
 /**
  * 1996 歷史地標資料庫（1:1 對齊 1996年義守大學平面圖.png 與校友歷史考據）
@@ -129,31 +129,31 @@ export const LANDMARKS_1996 = [
     id: 'sports-field',
     name: '操場與升旗台（升旗台位於南側）',
     tag: '運動',
-    pos: [6, 27, 162],
-    camPos: [-26, 44, 128],
-    lookAt: [6, 24, 176],
-    era: '1996 後方最高平台運動場',
-    desc: '位於校園最南側後方高地（平面圖標示「操場」處），東西向 8 跑道紅土田徑場與中央草皮足球場。依校友指正，升旗台、三支旗桿、紅頂司令台與五層階梯觀眾席位於操場南側（遠離北側男宿建築物的另一側），面向北方操場。'
+    pos: [6, 36, 177],
+    camPos: [-28, 52, 134],
+    lookAt: [6, 34, 182],
+    era: '1996 後方最高平台運動場（與男宿六樓同高）',
+    desc: '位於校園最南側後方高地（平面圖標示「操場」處），地勢高度正好對齊男宿六樓（兩者之間為一至六樓高的山坡，由六樓連結橋水平直通操場邊）。東西向 8 跑道紅土田徑場與中央草皮足球場，升旗台、三支旗桿、紅頂司令台與五層階梯觀眾席位於操場南側，面向北方操場。'
   },
   {
     id: 'tug-of-war',
     name: '1996 校慶拔河活動（後面操場）',
     tag: '活動',
-    pos: [6, 26, 162],
-    camPos: [24, 33, 136],
-    lookAt: [6, 24, 162],
+    pos: [6, 35, 177],
+    camPos: [24, 44, 148],
+    lookAt: [6, 34, 177],
     era: '1996/10/16 高雄工學院校慶紀實',
     desc: '重現 1996 年 10 月 16 日高雄工學院校慶在後方操場草皮舉辦的拔河比賽：兩隊各 8 名穿著白色系服的學生奮力拉繩，中央有裁判執旗、兩旁有同學圍觀加油與攝影師紀錄。'
   },
   {
     id: 'dorm-male',
-    name: '男宿（1996 高層宿舍與機車陣）',
+    name: '男宿（1996 高層宿舍、六樓操場連結橋與機車陣）',
     tag: '1996 男宿',
-    pos: [-39, 30, 127],
-    camPos: [-7, 36, 87],
-    lookAt: [-39, 26, 127],
+    pos: [-39, 36, 127],
+    camPos: [-12, 43, 95],
+    lookAt: [-39, 29, 134],
     era: '1996 高層雙棟為男宿（1997 年與女宿對調）',
-    desc: '位於平面圖「男宿」位置（操場西北側）。1996 年當時這棟 11 層高層雙翼紅磚大樓為男生宿舍（頂樓設階梯機房、藍水塔與紅瓦斜邊簷口，六樓有天橋通往操場），直到 1997 年才與低層女宿對調！前方環湖道路路邊停滿 26 輛學生機車。'
+    desc: '位於平面圖「男宿」位置（操場西北側）。因男宿與操場之間隔著一至六樓高的自然山坡，操場地勢正好與男宿六樓同高，六樓設有水平連結橋跨過山坡直通操場！1996 年當時這棟 11 層雙翼紅磚大樓為男生宿舍，直到 1997 年才與低層女宿對調；前方環湖道路路邊停滿 26 輛學生機車。'
   },
   {
     id: 'dorm-female',
@@ -1119,12 +1119,12 @@ export function createCampusBuildings(scene, texLib) {
   }
 
   // =========================================================================
-  // 9. 操場與升旗台 (6, 162：升旗台與觀眾席位在操場南側 +Z，面向北方操場，完全避開圖書館！)
+  // 9. 操場與升旗台 (6, 177：海拔 33.5m 與男宿六樓等高；升旗台與觀眾席位在操場南側 +Z)
   // =========================================================================
   {
     const fieldGroup = new THREE.Group();
-    const fy = getTerrainHeight(6, 162);
-    fieldGroup.position.set(6, fy + 0.16, 162);
+    const fy = getTerrainHeight(6, 177);
+    fieldGroup.position.set(6, fy + 0.16, 177);
 
     const fieldPlate = new THREE.Mesh(
       new THREE.PlaneGeometry(98, 56),
@@ -1203,12 +1203,12 @@ export function createCampusBuildings(scene, texLib) {
   }
 
   // =========================================================================
-  // 10. 1996 校慶拔河活動（位於後面操場草皮中央 6, 162）
+  // 10. 1996 校慶拔河活動（位於後面操場草皮中央 6, 177）
   // =========================================================================
   {
     const tugGroup = new THREE.Group();
-    const ty = getTerrainHeight(6, 162);
-    tugGroup.position.set(6, ty + 0.28, 162);
+    const ty = getTerrainHeight(6, 177);
+    tugGroup.position.set(6, ty + 0.28, 177);
     animatedParts.tugGroup = tugGroup;
 
     // 22 公尺拔河麻繩
@@ -1272,7 +1272,7 @@ export function createCampusBuildings(scene, texLib) {
   }
 
   // =========================================================================
-  // 11. 男宿（1996 高層 11 樓雙翼宿舍 + 教授宿舍區 + 26 輛路邊機車陣）
+  // 11. 男宿（1996 高層 11 樓雙翼宿舍 + 6 樓通往操場連結橋 + 26 輛路邊機車陣）
   //     註：1996 年高層為男宿，1997 年始與低層女宿對調
   // =========================================================================
   {
@@ -1322,26 +1322,44 @@ export function createCampusBuildings(scene, texLib) {
       }
     }
 
-    // 6 樓通往操場西側坡地之連通天橋（附實心落地橋墩，不懸空、不跨入跑道）
+    // 男宿 6 樓與操場之間的水平連結橋：
+    // 男宿 1F 地坪 19.5m，6 樓樓板高約 +14.1m（海拔 33.6m），正對海拔 33.5m 的操場草地邊緣，跨越中間 1F→6F 的山坡
     const skybridge = new THREE.Group();
-    const sDeck = new THREE.Mesh(new THREE.BoxGeometry(18, 0.45, 3.2), concreteMat);
-    const sRoof = new THREE.Mesh(new THREE.BoxGeometry(18, 0.35, 3.6), roofMat);
-    sRoof.position.y = 2.6;
-    for (let px = -7.5; px <= 7.5; px += 5.0) {
-      const postF = new THREE.Mesh(new THREE.BoxGeometry(0.25, 2.5, 0.25), concreteMat);
-      postF.position.set(px, 1.3, 1.45);
-      const postB = postF.clone();
-      postB.position.z = -1.45;
-      skybridge.add(postF, postB);
+    const bridgeLen = 15.8;
+    const bridgeW = 3.6;
+    const sDeck = new THREE.Mesh(new THREE.BoxGeometry(bridgeW, 0.46, bridgeLen), concreteMat);
+    const sRailL = new THREE.Mesh(new THREE.BoxGeometry(0.24, 1.05, bridgeLen - 0.3), concreteMat);
+    sRailL.position.set(-bridgeW / 2 + 0.14, 0.72, 0);
+    const sRailR = sRailL.clone();
+    sRailR.position.x = bridgeW / 2 - 0.14;
+
+    const sRoof = new THREE.Mesh(new THREE.BoxGeometry(bridgeW + 0.6, 0.36, bridgeLen + 0.4), roofMat);
+    sRoof.position.y = 2.85;
+    for (let pz = -6.2; pz <= 6.2; pz += 4.1) {
+      const postL = new THREE.Mesh(new THREE.BoxGeometry(0.24, 2.65, 0.24), concreteMat);
+      postL.position.set(-bridgeW / 2 + 0.2, 1.45, pz);
+      const postR = postL.clone();
+      postR.position.x = bridgeW / 2 - 0.2;
+      skybridge.add(postL, postR);
     }
-    for (const pierX of [-4.5, 2.0, 8.2]) {
-      const pier = new THREE.Mesh(new THREE.BoxGeometry(0.95, 22.0, 0.95), concreteMat);
-      pier.position.set(pierX, -11.0, 0);
+
+    // 山坡中段支撐橋墩（由 6 樓橋底向下落入 1F→6F 的斜坡）
+    for (const [pierZ, pierH] of [[-3.5, 12.5], [1.8, 7.5]]) {
+      const pier = new THREE.Mesh(new THREE.BoxGeometry(0.9, pierH, 0.9), concreteMat);
+      pier.position.set(0, -pierH / 2, pierZ);
       skybridge.add(pier);
     }
-    skybridge.add(sDeck, sRoof);
-    skybridge.position.set(15, 15.0, 7.5);
-    skybridge.rotation.y = -0.52;
+
+    // 操場端橋台（平順銜接操場外圍綠地，不壓入跑道）
+    const abutment = new THREE.Mesh(new THREE.BoxGeometry(bridgeW + 0.8, 1.8, 2.2), concreteMat);
+    abutment.position.set(0, -0.75, bridgeLen / 2 - 0.8);
+    // 男宿 6 樓端門廳接口
+    const portal = new THREE.Mesh(new THREE.BoxGeometry(bridgeW + 0.5, 3.3, 0.7), concreteMat);
+    portal.position.set(0, 1.45, -bridgeLen / 2 + 0.35);
+
+    skybridge.add(sDeck, sRailL, sRailR, sRoof, abutment, portal);
+    // 位於男宿後側（面向操場側 +Z），由 wingA 六樓（y = 14.1m）垂直跨越山坡接上操場西側草地
+    skybridge.position.set(-9.8, 14.1, 6.0 + bridgeLen / 2);
     dormMaleGroup.add(skybridge);
 
     // 環湖道路路邊 26 輛機車陣（透過 roadPoint 精準停放於道路西側路肩，避開路緣石與路口）

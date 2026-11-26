@@ -2,8 +2,8 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
 import { createTextureLibrary } from './textures.js';
-import { createTerrainAndRoads, getTerrainHeight } from './terrain.js';
-import { createCampusBuildings, LANDMARKS_1996 } from './buildings.js';
+import { createTerrainAndRoads, getTerrainHeight } from './terrain.js?v=20261127c';
+import { createCampusBuildings, LANDMARKS_1996 } from './buildings.js?v=20261127c';
 
 const container = document.getElementById('canvas-container');
 const labelsLayer = document.getElementById('labels-layer');
