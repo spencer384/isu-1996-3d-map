@@ -1,0 +1,576 @@
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
+import { createTextureLibrary } from './textures.js';
+import { createTerrainAndRoads, getTerrainHeight } from './terrain.js';
+import { createCampusBuildings, LANDMARKS_1996 } from './buildings.js';
+
+const container = document.getElementById('canvas-container');
+const labelsLayer = document.getElementById('labels-layer');
+const landmarkListEl = document.getElementById('landmark-list');
+const infoCard = document.getElementById('info-card');
+const infoEra = document.getElementById('info-era');
+const infoTitle = document.getElementById('info-title');
+const infoDesc = document.getElementById('info-desc');
+const walkHint = document.getElementById('walk-hint');
+const minimapCanvas = document.getElementById('minimap');
+const minimapCtx = minimapCanvas.getContext('2d');
+const coordsText = document.getElementById('coords-text');
+
+// 1. Scene, Camera, Renderer
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0xa6cbe3, 0.0018);
+
+const camera = new THREE.PerspectiveCamera(52, window.innerWidth / window.innerHeight, 0.5, 1200);
+camera.position.set(-10, 88, -175);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.06;
+container.appendChild(renderer.domElement);
+
+// 2. Procedural PBR Texture Library & Sky Environment Reflection (PMREM)
+const texLib = createTextureLibrary(renderer);
+
+const skyGeo = new THREE.SphereGeometry(480, 32, 20);
+const skyMat = new THREE.MeshBasicMaterial({
+  map: texLib.skyEquirect('day'),
+  side: THREE.BackSide,
+  fog: false,
+});
+const skyDome = new THREE.Mesh(skyGeo, skyMat);
+scene.add(skyDome);
+
+// Soft drifting 3D cloud puffs above Guanyin Mountain
+const cloudsGroup = new THREE.Group();
+const cloudMat = new THREE.MeshStandardMaterial({
+  color: 0xffffff,
+  roughness: 1.0,
+  metalness: 0.0,
+  transparent: true,
+  opacity: 0.72,
+  fog: false,
+});
+const cloudClusters = [];
+for (let i = 0; i < 14; i++) {
+  const cg = new THREE.Group();
+  const baseX = -220 + (i % 5) * 110 + Math.sin(i * 2.1) * 28;
+  const baseZ = -160 + Math.floor(i / 5) * 165 + Math.cos(i * 1.7) * 35;
+  const baseY = 128 + (i % 3) * 14;
+  for (let p = 0; p < 4; p++) {
+    const puff = new THREE.Mesh(
+      new THREE.IcosahedronGeometry(14 + p * 2.5, 1),
+      cloudMat
+    );
+    puff.scale.set(1.8, 0.65, 1.3);
+    puff.position.set((p - 1.5) * 13, (p % 2) * 3, (p % 3 - 1) * 5);
+    cg.add(puff);
+  }
+  cg.position.set(baseX, baseY, baseZ);
+  cloudsGroup.add(cg);
+  cloudClusters.push(cg);
+}
+scene.add(cloudsGroup);
+
+// Generate lightweight environment reflection map via PMREMGenerator
+const pmrem = new THREE.PMREMGenerator(renderer);
+const envScene = new THREE.Scene();
+envScene.add(new THREE.Mesh(
+  new THREE.SphereGeometry(20, 16, 12),
+  new THREE.MeshBasicMaterial({ map: texLib.skyEquirect('day'), side: THREE.BackSide })
+));
+scene.environment = pmrem.fromScene(envScene).texture;
+scene.environmentIntensity = 0.45;
+pmrem.dispose();
+
+// 3. Lights
+const hemiLight = new THREE.HemisphereLight(0xdff2ff, 0x3b5234, 0.85);
+scene.add(hemiLight);
+
+const sunLight = new THREE.DirectionalLight(0xfff5e0, 1.85);
+sunLight.position.set(120, 160, -90);
+sunLight.castShadow = true;
+sunLight.shadow.mapSize.width = 2048;
+sunLight.shadow.mapSize.height = 2048;
+sunLight.shadow.camera.near = 20;
+sunLight.shadow.camera.far = 480;
+const d = 195;
+sunLight.shadow.camera.left = -d;
+sunLight.shadow.camera.right = d;
+sunLight.shadow.camera.top = d;
+sunLight.shadow.camera.bottom = -d;
+sunLight.shadow.bias = -0.0005;
+scene.add(sunLight);
+
+// 4. Build 1996 Campus Terrain & Detailed Multi-Part Buildings
+const { streetLampEmissiveMat, streetLampLights } = createTerrainAndRoads(scene, texLib);
+const { clickableObjects, animatedParts, nightEmissiveMaterials } = createCampusBuildings(scene, texLib);
+
+// 5. Controls (Left-drag pan, Right-drag rotate, Wheel zoom)
+const orbitControls = new OrbitControls(camera, renderer.domElement);
+orbitControls.enableDamping = true;
+orbitControls.dampingFactor = 0.06;
+orbitControls.maxPolarAngle = Math.PI * 0.48;
+orbitControls.minDistance = 12;
+orbitControls.maxDistance = 380;
+orbitControls.screenSpacePanning = false;
+orbitControls.mouseButtons = {
+  LEFT: THREE.MOUSE.PAN,
+  MIDDLE: THREE.MOUSE.DOLLY,
+  RIGHT: THREE.MOUSE.ROTATE
+};
+orbitControls.target.set(6, 16, 68);
+
+const walkControls = new PointerLockControls(camera, document.body);
+let mode = 'orbit'; // 'orbit' | 'walk'
+let showLabels = true;
+let activeLandmarkId = 'panorama';
+let flyAnim = null;
+
+function flyToLandmark(lm) {
+  activeLandmarkId = lm.id;
+  if (mode === 'walk') {
+    setMode('orbit');
+  }
+
+  flyAnim = {
+    startPos: camera.position.clone(),
+    endPos: new THREE.Vector3(...lm.camPos),
+    startTarget: orbitControls.target.clone(),
+    endTarget: new THREE.Vector3(...lm.lookAt),
+    progress: 0
+  };
+
+  infoEra.textContent = lm.era;
+  infoTitle.textContent = lm.name;
+  infoDesc.textContent = lm.desc;
+  infoCard.classList.remove('hidden');
+
+  updateActiveUI();
+}
+
+// 6. Landmark Sidebar & 3D Projected Pins
+const pinElements = new Map();
+
+LANDMARKS_1996.forEach((lm) => {
+  const item = document.createElement('button');
+  item.className = 'landmark-item' + (lm.id === activeLandmarkId ? ' active' : '');
+  item.dataset.id = lm.id;
+  item.innerHTML = `
+    <div class="landmark-item-title">
+      <span>${lm.name}</span>
+      <span class="landmark-tag">${lm.tag}</span>
+    </div>
+    <div class="landmark-item-sub">${lm.era}</div>
+  `;
+  item.addEventListener('click', () => flyToLandmark(lm));
+  landmarkListEl.appendChild(item);
+
+  if (lm.id === 'panorama' || lm.id === 'topdown') return;
+
+  const pin = document.createElement('div');
+  pin.className = 'landmark-pin' + (lm.id === activeLandmarkId ? ' active' : '');
+  pin.dataset.id = lm.id;
+  pin.innerHTML = `
+    <div class="landmark-badge"><span class="dot"></span><span>${lm.name.split('（')[0]}</span></div>
+    <div class="landmark-stem"></div>
+  `;
+  pin.addEventListener('click', (e) => {
+    e.stopPropagation();
+    flyToLandmark(lm);
+  });
+  labelsLayer.appendChild(pin);
+  pinElements.set(lm.id, pin);
+});
+
+function updateActiveUI() {
+  document.querySelectorAll('.landmark-item').forEach((el) => {
+    el.classList.toggle('active', el.dataset.id === activeLandmarkId);
+  });
+  pinElements.forEach((pin, id) => {
+    pin.classList.toggle('active', id === activeLandmarkId);
+  });
+}
+
+// 7. Raycasting Click on Buildings
+const raycaster = new THREE.Raycaster();
+const pointer = new THREE.Vector2();
+let pointerDownPos = { x: 0, y: 0 };
+
+renderer.domElement.addEventListener('pointerdown', (e) => {
+  pointerDownPos = { x: e.clientX, y: e.clientY };
+});
+
+renderer.domElement.addEventListener('pointerup', (e) => {
+  if (mode === 'walk') return;
+  const dist = Math.hypot(e.clientX - pointerDownPos.x, e.clientY - pointerDownPos.y);
+  if (dist > 5) return;
+
+  pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
+  pointer.y = -(e.clientY / window.innerHeight) * 2 + 1;
+  raycaster.setFromCamera(pointer, camera);
+  const hits = raycaster.intersectObjects(clickableObjects, false);
+  if (hits.length > 0) {
+    const id = hits[0].object.userData.landmarkId;
+    const lm = LANDMARKS_1996.find((l) => l.id === id);
+    if (lm) flyToLandmark(lm);
+  }
+});
+
+// 8. Mode & Time-of-Day Controls
+const btnOrbit = document.getElementById('btn-orbit');
+const btnWalk = document.getElementById('btn-walk');
+const btnPanorama = document.getElementById('btn-panorama');
+const btnTopdown = document.getElementById('btn-topdown');
+const btnTime = document.getElementById('btn-time');
+const btnLabels = document.getElementById('btn-labels');
+const btnAuto = document.getElementById('btn-auto');
+
+function setMode(newMode) {
+  mode = newMode;
+  btnOrbit.classList.toggle('active', mode === 'orbit');
+  btnWalk.classList.toggle('active', mode === 'walk');
+
+  if (mode === 'walk') {
+    flyAnim = null;
+    orbitControls.enabled = false;
+    orbitControls.autoRotate = false;
+    btnAuto.classList.remove('active');
+    walkHint.style.display = 'block';
+    if (camera.position.y > 40) {
+      const y = getTerrainHeight(0, -60) + 2.0;
+      camera.position.set(0, y, -60);
+      camera.lookAt(10, y + 2, 20);
+    }
+  } else {
+    if (document.pointerLockElement) document.exitPointerLock();
+    orbitControls.enabled = true;
+    walkHint.style.display = 'none';
+  }
+}
+
+btnOrbit.addEventListener('click', () => setMode('orbit'));
+btnWalk.addEventListener('click', () => {
+  setMode('walk');
+  walkControls.lock();
+});
+renderer.domElement.addEventListener('click', () => {
+  if (mode === 'walk' && !walkControls.isLocked) {
+    walkControls.lock();
+  }
+});
+
+btnPanorama.addEventListener('click', () => {
+  flyToLandmark(LANDMARKS_1996[0]);
+});
+
+btnTopdown.addEventListener('click', () => {
+  const td = LANDMARKS_1996.find((l) => l.id === 'topdown');
+  if (td) flyToLandmark(td);
+});
+
+const TIME_PRESETS = [
+  {
+    key: 'day',
+    name: '晴朗白天',
+    fog: 0xa6cbe3,
+    fogDensity: 0.0018,
+    sunColor: 0xfff5e0,
+    sunIntensity: 1.85,
+    sunPos: [120, 160, -90],
+    hemiSky: 0xdff2ff,
+    hemiGround: 0x3b5234,
+    hemiIntensity: 0.85,
+    cloudOpacity: 0.72,
+    cloudColor: 0xffffff,
+    nightFactor: 0.0,
+    envIntensity: 0.45,
+  },
+  {
+    key: 'mist',
+    name: '午後山嵐',
+    fog: 0xc2d0da,
+    fogDensity: 0.0046,
+    sunColor: 0xfff8eb,
+    sunIntensity: 1.15,
+    sunPos: [80, 130, -40],
+    hemiSky: 0xdbe5ec,
+    hemiGround: 0x455844,
+    hemiIntensity: 1.05,
+    cloudOpacity: 0.85,
+    cloudColor: 0xe6edf2,
+    nightFactor: 0.08,
+    envIntensity: 0.35,
+  },
+  {
+    key: 'sunset',
+    name: '黃昏夕照',
+    fog: 0xd6967a,
+    fogDensity: 0.0024,
+    sunColor: 0xffa65c,
+    sunIntensity: 1.65,
+    sunPos: [-150, 55, 40],
+    hemiSky: 0xffcbb0,
+    hemiGround: 0x362a2e,
+    hemiIntensity: 0.72,
+    cloudOpacity: 0.65,
+    cloudColor: 0xffd2b3,
+    nightFactor: 0.35,
+    envIntensity: 0.38,
+  },
+  {
+    key: 'night',
+    name: '校園夜景',
+    fog: 0x101c2b,
+    fogDensity: 0.0026,
+    sunColor: 0x7aa2d4,
+    sunIntensity: 0.52,
+    sunPos: [-90, 140, -70],
+    hemiSky: 0x263b59,
+    hemiGround: 0x101816,
+    hemiIntensity: 0.55,
+    cloudOpacity: 0.14,
+    cloudColor: 0x2b3e57,
+    nightFactor: 1.0,
+    envIntensity: 0.16,
+  }
+];
+let timeIdx = 0;
+
+btnTime.addEventListener('click', () => {
+  timeIdx = (timeIdx + 1) % TIME_PRESETS.length;
+  const p = TIME_PRESETS[timeIdx];
+  btnTime.textContent = `光影：${p.name}`;
+
+  skyMat.map = texLib.skyEquirect(p.key);
+  skyMat.needsUpdate = true;
+
+  scene.fog.color.setHex(p.fog);
+  scene.fog.density = p.fogDensity;
+  scene.environmentIntensity = p.envIntensity;
+
+  sunLight.color.setHex(p.sunColor);
+  sunLight.intensity = p.sunIntensity;
+  sunLight.position.set(...p.sunPos);
+
+  hemiLight.color.setHex(p.hemiSky);
+  hemiLight.groundColor.setHex(p.hemiGround);
+  hemiLight.intensity = p.hemiIntensity;
+
+  cloudMat.opacity = p.cloudOpacity;
+  cloudMat.color.setHex(p.cloudColor);
+
+  // Ramp building window lights & street lamps
+  nightEmissiveMaterials.forEach((m) => {
+    m.emissiveIntensity = p.nightFactor * 1.15;
+  });
+  streetLampEmissiveMat.emissiveIntensity = p.nightFactor * 2.2;
+  streetLampLights.forEach((l) => {
+    l.intensity = p.nightFactor * 18.0;
+  });
+});
+
+btnLabels.addEventListener('click', () => {
+  showLabels = !showLabels;
+  btnLabels.classList.toggle('active', showLabels);
+  labelsLayer.style.display = showLabels ? 'block' : 'none';
+});
+
+btnAuto.addEventListener('click', () => {
+  if (mode === 'walk') setMode('orbit');
+  orbitControls.autoRotate = !orbitControls.autoRotate;
+  orbitControls.autoRotateSpeed = 0.65;
+  btnAuto.classList.toggle('active', orbitControls.autoRotate);
+});
+
+const sidebar = document.getElementById('sidebar');
+const toggleSidebarBtn = document.getElementById('toggle-sidebar');
+toggleSidebarBtn.addEventListener('click', () => {
+  const collapsed = sidebar.classList.toggle('collapsed');
+  toggleSidebarBtn.classList.toggle('collapsed', collapsed);
+  toggleSidebarBtn.textContent = collapsed ? '▶ 導覽' : '◀ 導覽';
+});
+
+document.getElementById('info-close').addEventListener('click', () => {
+  infoCard.classList.add('hidden');
+});
+
+// 9. Keyboard Walk Movement
+const keys = {};
+window.addEventListener('keydown', (e) => { keys[e.code] = true; });
+window.addEventListener('keyup', (e) => { keys[e.code] = false; });
+
+// 10. Minimap Drawing
+function drawMinimap() {
+  const w = minimapCanvas.width;
+  const h = minimapCanvas.height;
+  minimapCtx.clearRect(0, 0, w, h);
+
+  minimapCtx.fillStyle = '#172b1e';
+  minimapCtx.fillRect(0, 0, w, h);
+
+  const toMap = (x, z) => [
+    w / 2 + (x / 310) * w,
+    h / 2 + ((z - 35) / 340) * h
+  ];
+
+  minimapCtx.strokeStyle = '#55606e';
+  minimapCtx.lineWidth = 3;
+  minimapCtx.beginPath();
+  [[-95, -130], [-22, -102], [-6, -86], [-5, -52], [-8, -12], [-2, 32], [20, 68], [52, 92], [80, 112]].forEach(([x, z], i) => {
+    const [mx, my] = toMap(x, z);
+    if (i === 0) minimapCtx.moveTo(mx, my);
+    else minimapCtx.lineTo(mx, my);
+  });
+  minimapCtx.stroke();
+
+  minimapCtx.beginPath();
+  [[-5, -50], [-20, -14], [-34, 28], [-46, 72], [-58, 108]].forEach(([x, z], i) => {
+    const [mx, my] = toMap(x, z);
+    if (i === 0) minimapCtx.moveTo(mx, my);
+    else minimapCtx.lineTo(mx, my);
+  });
+  minimapCtx.stroke();
+
+  minimapCtx.beginPath();
+  [[20, 68], [52, 64], [74, 58]].forEach(([x, z], i) => {
+    const [mx, my] = toMap(x, z);
+    if (i === 0) minimapCtx.moveTo(mx, my);
+    else minimapCtx.lineTo(mx, my);
+  });
+  minimapCtx.stroke();
+
+  minimapCtx.beginPath();
+  [[-46, 72], [-24, 60], [5, 44]].forEach(([x, z], i) => {
+    const [mx, my] = toMap(x, z);
+    if (i === 0) minimapCtx.moveTo(mx, my);
+    else minimapCtx.lineTo(mx, my);
+  });
+  minimapCtx.stroke();
+
+  LANDMARKS_1996.forEach((lm) => {
+    if (lm.id === 'panorama' || lm.id === 'topdown') return;
+    const [mx, my] = toMap(lm.pos[0], lm.pos[2]);
+    minimapCtx.fillStyle = lm.id === activeLandmarkId ? '#e06d44' : '#f0b865';
+    minimapCtx.beginPath();
+    minimapCtx.arc(mx, my, lm.id === activeLandmarkId ? 4 : 2.6, 0, Math.PI * 2);
+    minimapCtx.fill();
+  });
+
+  const [cx, cy] = toMap(camera.position.x, camera.position.z);
+  const dir = new THREE.Vector3();
+  camera.getWorldDirection(dir);
+  minimapCtx.fillStyle = '#5ad2ff';
+  minimapCtx.beginPath();
+  minimapCtx.arc(cx, cy, 4, 0, Math.PI * 2);
+  minimapCtx.fill();
+
+  minimapCtx.strokeStyle = '#5ad2ff';
+  minimapCtx.lineWidth = 2;
+  minimapCtx.beginPath();
+  minimapCtx.moveTo(cx, cy);
+  minimapCtx.lineTo(cx + dir.x * 14, cy + dir.z * 14);
+  minimapCtx.stroke();
+
+  coordsText.textContent = `X:${Math.round(camera.position.x)} Z:${Math.round(camera.position.z)}`;
+}
+
+// 11. Animation Loop
+const clock = new THREE.Clock();
+const projVec = new THREE.Vector3();
+
+function animate() {
+  requestAnimationFrame(animate);
+  const dt = Math.min(clock.getDelta(), 0.05);
+  const elapsed = clock.elapsedTime;
+
+  if (flyAnim) {
+    flyAnim.progress += dt * 1.15;
+    const t = Math.min(1, flyAnim.progress);
+    const ease = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+    camera.position.lerpVectors(flyAnim.startPos, flyAnim.endPos, ease);
+    orbitControls.target.lerpVectors(flyAnim.startTarget, flyAnim.endTarget, ease);
+    if (t >= 1) flyAnim = null;
+  }
+
+  if (mode === 'walk') {
+    const speed = (keys['ShiftLeft'] || keys['ShiftRight'] ? 28 : 13) * dt;
+    if (keys['KeyW'] || keys['ArrowUp']) walkControls.moveForward(speed);
+    if (keys['KeyS'] || keys['ArrowDown']) walkControls.moveForward(-speed);
+    if (keys['KeyA'] || keys['ArrowLeft']) walkControls.moveRight(-speed);
+    if (keys['KeyD'] || keys['ArrowRight']) walkControls.moveRight(speed);
+    const groundY = getTerrainHeight(camera.position.x, camera.position.z);
+    camera.position.y = THREE.MathUtils.lerp(camera.position.y, groundY + 2.1, 0.25);
+  } else {
+    orbitControls.update();
+  }
+
+  // Subtle live-scene motion (hide clouds during high-altitude top-down map view)
+  cloudsGroup.visible = camera.position.y < 165;
+  cloudClusters.forEach((cg, idx) => {
+    cg.position.x += dt * (1.2 + (idx % 3) * 0.4);
+    if (cg.position.x > 280) cg.position.x = -280;
+  });
+
+  if (animatedParts.poolMat?.map) {
+    animatedParts.poolMat.map.offset.x += dt * 0.025;
+    animatedParts.poolMat.map.offset.y += dt * 0.015;
+  }
+
+  if (animatedParts.fountainJet) {
+    const s = 0.88 + Math.sin(elapsed * 5.2) * 0.14;
+    animatedParts.fountainJet.scale.set(1, s, 1);
+  }
+
+  animatedParts.flags.forEach((flag, idx) => {
+    flag.rotation.y = Math.sin(elapsed * 3.2 + idx) * 0.14;
+  });
+
+  if (animatedParts.tugGroup) {
+    animatedParts.tugGroup.position.x = 6 + Math.sin(elapsed * 2.2) * 0.25;
+  }
+
+  if (animatedParts.beaconMat && animatedParts.beaconLight) {
+    const nightFactor = TIME_PRESETS[timeIdx].nightFactor;
+    const pulse = (Math.sin(elapsed * 4.0) + 1) * 0.5;
+    animatedParts.beaconMat.emissiveIntensity = 0.25 + pulse * (0.6 + nightFactor * 2.5);
+    animatedParts.beaconLight.intensity = nightFactor * pulse * 14;
+  }
+
+  // Update 2D projected landmark pins
+  if (showLabels) {
+    LANDMARKS_1996.forEach((lm) => {
+      const pin = pinElements.get(lm.id);
+      if (!pin) return;
+      projVec.set(lm.pos[0], lm.pos[1] + 5, lm.pos[2]);
+      projVec.project(camera);
+
+      if (projVec.z > 1 || projVec.z < -1) {
+        pin.style.opacity = '0';
+        pin.style.pointerEvents = 'none';
+      } else {
+        const x = (projVec.x * 0.5 + 0.5) * window.innerWidth;
+        const y = (-projVec.y * 0.5 + 0.5) * window.innerHeight;
+        pin.style.left = `${x}px`;
+        pin.style.top = `${y}px`;
+        pin.style.opacity = '1';
+        pin.style.pointerEvents = 'auto';
+      }
+    });
+  }
+
+  drawMinimap();
+  renderer.render(scene, camera);
+}
+
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+animate();
