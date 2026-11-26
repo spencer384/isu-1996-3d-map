@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { getTerrainHeight, STAIR_LINE, roadPoint } from './terrain.js?v=20261127c';
+import { getTerrainHeight, STAIR_LINE, roadPoint } from './terrain.js?v=20261127d';
 
 /**
  * 1996 歷史地標資料庫（1:1 對齊 1996年義守大學平面圖.png 與校友歷史考據）
@@ -10,20 +10,20 @@ export const LANDMARKS_1996 = [
     name: '1996 校園全景（老照片視角）',
     tag: '全景',
     pos: [0, 32, -85],
-    camPos: [-10, 88, -175],
-    lookAt: [6, 16, 68],
+    camPos: [-10, 96, -175],
+    lookAt: [6, 22, 74],
     era: '1996 高雄工學院時期 • 歷史全景',
-    desc: '對應 1996 年老照片「更早時期的義守大學全景」角度：北側校門口進入後，左側（東側）依序為北側球場、泳池、活動中心、口字型教學大樓、科技大樓與圖書館；中央為紅色舊水塔與行政大樓；右側（西側）為高層男宿與低層女宿；後方最高平台即為操場。'
+    desc: '對應 1996 年老照片「更早時期的義守大學全景」角度：北側校門口進入後，東側依序為北側球場、體育館、泳池、活動中心、口字型教學大樓；上層同高程平台坐落行政大樓、科技大樓、圖書館與後方操場；西側則為東北—西南走向的高層男宿與低層女宿。'
   },
   {
     id: 'topdown',
     name: '1996 平面圖俯視對照',
     tag: '平面圖',
-    pos: [4, 25, 48],
-    camPos: [4, 315, 58],
-    lookAt: [4, 14, 52],
-    era: '1:1 對照「1996年義守大學平面圖」',
-    desc: '正北朝上俯視全區配置：依平面圖精準還原校門口、泳池、活動中心、口字型教學大樓、科技大樓、圖書館、行政大樓、男宿（1996 高層）、女宿（1996 低層）及後方操場；當時尚未開發的東北側與遠東側保持原始山林。'
+    pos: [4, 25, 52],
+    camPos: [4, 330, 58],
+    lookAt: [4, 20, 52],
+    era: '1:1 對照空拍與「1996年義守大學平面圖」',
+    desc: '正北朝上俯視全區配置：依空拍實景與 1996 平面圖精準校正各棟建築方位、男宿與行政大樓間之道路、百階樓梯位置與長度，以及上層同高度平台（行政大樓、科技大樓、圖書館、操場）。'
   },
   {
     id: 'gate',
@@ -39,19 +39,19 @@ export const LANDMARKS_1996 = [
     id: 'pool',
     name: '泳池（1995 露天標準池）',
     tag: '體育',
-    pos: [38, 11, 4],
-    camPos: [14, 24, -22],
-    lookAt: [38, 10, 4],
+    pos: [44, 12, 12],
+    camPos: [16, 26, -16],
+    lookAt: [44, 10, 12],
     era: '1995 年啟用',
-    desc: '位於校門口進入後東側（平面圖標示「泳池」處），緊鄰活動中心西側。設有馬賽克磁磚池畔、8 條紅白水道線、萬國旗與南側紅頂遮陽看台。'
+    desc: '位於校門口進入後東側（平面圖標示「泳池」處），緊鄰活動中心西側、西接紅瓦斜頂附屬棟。設有馬賽克磁磚池畔、8 條紅白水道線、萬國旗與南側紅頂遮陽看台。'
   },
   {
     id: 'activity',
     name: '活動中心',
     tag: '核心',
-    pos: [68, 14, -10],
-    camPos: [40, 26, -40],
-    lookAt: [68, 13, -10],
+    pos: [76, 15, -2],
+    camPos: [46, 28, -34],
+    lookAt: [76, 13, -2],
     era: '1996 學生活動中樞',
     desc: '緊鄰泳池東側（平面圖標示「活動中心」處），採三層紅磚外牆搭配白柱平頂雨遮門廳、玻璃三角採光罩、屋頂天窗與側邊雙圓塔樓梯塔，門前設有圓形噴水池。當年大一新生入學典禮即在此頂樓禮堂舉辦。'
   },
@@ -59,111 +59,111 @@ export const LANDMARKS_1996 = [
     id: 'gym',
     name: '體育館（1996 施工中 → 2001 完工）',
     tag: '4D 演進',
-    pos: [78, 15, -36],
-    camPos: [46, 28, -68],
-    lookAt: [78, 11, -36],
+    pos: [52, 15, -22],
+    camPos: [22, 27, -52],
+    lookAt: [52, 11, -22],
     era: '1996 施工紀實 → 1999 完工啟用',
-    desc: '1993 年尚未動工；1996–1997 年正處於鋼筋混凝土柱樑、鷹架護網與黃色塔吊施工階段；至 1999–2001 年完工為宏偉的紅磚紅瓦大屋頂體育館，一樓並設有學生餐廳。切換下方 4D 時間軸即可親眼見證興建過程！'
+    desc: '位於泳池北側、活動中心西北側與北側球場南側之間。1993 年尚未動工；1996–1997 年正處於鋼筋混凝土柱樑、鷹架護網與黃色塔吊施工階段；至 1999–2001 年完工為宏偉的紅磚紅瓦大屋頂體育館。'
   },
   {
     id: 'old-teaching',
     name: '教學大樓（口字型四合院建築）',
     tag: '教學',
-    pos: [92, 19, 48],
-    camPos: [56, 30, 22],
-    lookAt: [92, 17, 48],
+    pos: [104, 21, 48],
+    camPos: [64, 34, 78],
+    lookAt: [104, 18, 48],
     era: '創校早期核心教學建築',
-    desc: '位於東側山坡（平面圖標示「教學大樓」處），為經典「口字型」四面圍合紅磚建築，中央擁有綠意中庭，四角設八角轉角塔樓，前方有圓環花圃與車道，校車常在前方道路讓學生上下車。'
+    desc: '位於東側山坡（平面圖標示「教學大樓」處），為經典「口字型」四面圍合紅磚建築，中央擁有綠意中庭，四角設八角轉角塔樓，西南向正門前設有圓環花圃與車道。'
   },
   {
     id: 'water-tower',
     name: '紅色舊水塔（山坡地標）',
     tag: '消失地標',
-    pos: [26, 25, 86],
-    camPos: [10, 28, 46],
-    lookAt: [26, 23, 86],
+    pos: [18, 22, 50],
+    camPos: [-6, 26, 24],
+    lookAt: [18, 20, 50],
     era: '1996 經典記憶 • 八角校徽高架水塔',
-    desc: '矗立於行政大樓（綜合大樓）東北側綠坡上的八角校徽高架水塔，採用四支斜向 X 型交叉鋼構塔架，頂端設有紅色尖塔鋼架與夜間航空警示燈，為早期校園天際線經典地標。'
+    desc: '矗立於泳池附屬棟南方、百階樓梯東北側山坡上的八角校徽高架水塔，採用四支斜向 X 型交叉鋼構塔架，頂端設有紅色尖塔鋼架與夜間航空警示燈，為早期校園天際線經典地標。'
   },
   {
     id: 'hundred-steps',
-    name: '125 階長樓梯（行政大樓／綜合大樓前百階）',
+    name: '百階樓梯（125 階長樓梯）',
     tag: '地標',
-    pos: [10.5, 18, 84],
-    camPos: [12.3, 16.5, 62],
-    lookAt: [8.0, 29, 120],
-    era: '校園經典百階（共 125 階）',
-    desc: '連接下方校園主幹道與上方行政大樓（綜合大樓）前廣場的筆直花崗岩大階梯，共分 5 段、總計 125 階，兩側設有暖色石材階梯護欄、南洋杉與路燈，是師生每日上下課必經的經典坡道。'
+    pos: [5.2, 24, 81],
+    camPos: [0, 19, 46],
+    lookAt: [9.5, 38, 124],
+    era: '校園經典百階（共 5 段 125 階）',
+    desc: '由校園主幹道彎道處（海拔 13.8m）筆直爬升近 42 公尺至上方行政大樓前廣場（海拔 33.5m），共分 5 段、總計 125 階，兩側設有暖色石材護欄、南洋杉與路燈，是師生每日上下課必經的經典坡道。'
   },
   {
     id: 'admin',
     name: '行政大樓（綜合大樓）',
     tag: '地標',
-    pos: [8, 39, 120],
-    camPos: [14, 38, 68],
-    lookAt: [8, 26, 120],
-    era: '校園核心地標 • 中央弧形玻璃帷幕與白色尖塔',
-    desc: '坐落於操場正北側、125 階長樓梯頂端的宏偉對稱地標建築（行政大樓即綜合大樓）：正面中央為貫穿全棟的半圓弧形藍色玻璃帷幕塔身，頂部冠以白色斜拉鋼構圓頂與高聳尖塔，左右雙翼為 11 層紅磚搭配白色立柱與紅瓦端塔，夜間頂樓照明格外醒目。'
+    pos: [10, 50, 124],
+    camPos: [4, 48, 72],
+    lookAt: [10, 38, 124],
+    era: '上層平台核心地標 • 與科技大樓／圖書館／操場同高',
+    desc: '坐落於操場正北側、百階樓梯頂端的上層同高程平台（海拔 33.5m），西側與男宿之間隔有環山支線道路：正面中央為半圓弧形藍色玻璃帷幕塔身，頂部冠以白色斜拉鋼構圓頂與高聳尖塔。'
   },
   {
     id: 'engineering',
     name: '科技大樓（1995 圓柱轉角塔樓）',
     tag: '教學',
-    pos: [56, 33, 118],
-    camPos: [34, 36, 74],
-    lookAt: [56, 28, 118],
-    era: '1995 年落成',
-    desc: '位於行政大樓東側（平面圖標示「科技大樓」處），雙翼紅磚高樓東角附有辨識度極高的 8 層圓柱形紅磚轉角塔樓與圓錐紅瓦頂，前方栽種整排圓錐柏樹。'
+    pos: [66, 46, 118],
+    camPos: [42, 48, 76],
+    lookAt: [66, 38, 118],
+    era: '1995 年落成 • 與行政大樓／操場同一高度平面',
+    desc: '位於行政大樓東側同一高度平台（海拔 33.5m），與操場之間有支線車道相隔；雙翼紅磚高樓附有辨識度極高的 8 層圓柱形紅磚轉角塔樓與圓錐紅瓦頂。'
   },
   {
     id: 'library',
     name: '義守大學圖書館',
     tag: '圖書',
-    pos: [78, 32, 148],
-    camPos: [44, 38, 112],
-    lookAt: [78, 28, 148],
-    era: '東南側重要館舍',
-    desc: '位於校園東南側（平面圖標示「義守大學圖書館」處），為多層紅磚建築搭配轉角圓形大廳與橘紅色圓錐屋頂，與科技大樓、教學大樓構成東側軸線。'
+    pos: [94, 45, 154],
+    camPos: [58, 50, 118],
+    lookAt: [94, 38, 154],
+    era: '東南側重要館舍 • 上層同高程平台',
+    desc: '位於科技大樓東南側、操場東側的同一高度平台（海拔 33.5m），為多層紅磚建築搭配轉角圓形大廳與橘紅色圓錐屋頂。'
   },
   {
     id: 'sports-field',
     name: '操場與升旗台（升旗台位於南側）',
     tag: '運動',
-    pos: [6, 36, 177],
-    camPos: [-28, 52, 134],
-    lookAt: [6, 34, 182],
-    era: '1996 後方最高平台運動場（與男宿六樓同高）',
-    desc: '位於校園最南側後方高地（平面圖標示「操場」處），地勢高度正好對齊男宿六樓（兩者之間為一至六樓高的山坡，由六樓連結橋水平直通操場邊）。東西向 8 跑道紅土田徑場與中央草皮足球場，升旗台、三支旗桿、紅頂司令台與五層階梯觀眾席位於操場南側，面向北方操場。'
+    pos: [6, 36, 170],
+    camPos: [-28, 54, 128],
+    lookAt: [6, 34, 176],
+    era: '上層同高程運動場（與行政／科技／圖書館及男宿六樓同高）',
+    desc: '緊鄰行政大樓正南側，與行政大樓、科技大樓、圖書館位於同一高度平面（海拔 33.5m），並正對西北側男宿六樓高度（由六樓連結橋跨越山坡水平直通）。升旗台、三支旗桿、紅頂司令台與觀眾席位於操場南側。'
   },
   {
     id: 'tug-of-war',
     name: '1996 校慶拔河活動（後面操場）',
     tag: '活動',
-    pos: [6, 35, 177],
-    camPos: [24, 44, 148],
-    lookAt: [6, 34, 177],
+    pos: [6, 35, 170],
+    camPos: [24, 44, 144],
+    lookAt: [6, 34, 170],
     era: '1996/10/16 高雄工學院校慶紀實',
-    desc: '重現 1996 年 10 月 16 日高雄工學院校慶在後方操場草皮舉辦的拔河比賽：兩隊各 8 名穿著白色系服的學生奮力拉繩，中央有裁判執旗、兩旁有同學圍觀加油與攝影師紀錄。'
+    desc: '重現 1996 年 10 月 16 日高雄工學院校慶在後方操場草皮舉辦的拔河比賽：兩隊各 8 名穿著白色系服的學生奮力拉繩，中央有裁判執旗、兩旁有同學圍觀加油。'
   },
   {
     id: 'dorm-male',
     name: '男宿（1996 高層宿舍、六樓操場連結橋與機車陣）',
     tag: '1996 男宿',
-    pos: [-39, 36, 127],
-    camPos: [-12, 43, 95],
-    lookAt: [-39, 29, 134],
+    pos: [-50, 36, 128],
+    camPos: [-16, 44, 92],
+    lookAt: [-48, 28, 134],
     era: '1996 高層雙棟為男宿（1997 年與女宿對調）',
-    desc: '位於平面圖「男宿」位置（操場西北側）。因男宿與操場之間隔著一至六樓高的自然山坡，操場地勢正好與男宿六樓同高，六樓設有水平連結橋跨過山坡直通操場！1996 年當時這棟 11 層雙翼紅磚大樓為男生宿舍，直到 1997 年才與低層女宿對調；前方環湖道路路邊停滿 26 輛學生機車。'
+    desc: '呈東北—西南走向坐落於操場西北側，東側隔著支線道路與行政大樓相望，西側隔著環山道路與女宿相對。因男宿 1F（19.5m）與操場（33.5m）之間有 1F→6F 的山坡，男宿南翼六樓設有水平連結橋直通操場！'
   },
   {
     id: 'dorm-female',
     name: '女宿（1996 低層紅瓦宿舍與餐廳）',
     tag: '1996 女宿',
-    pos: [-76, 24, 112],
-    camPos: [-42, 32, 74],
-    lookAt: [-76, 22, 112],
+    pos: [-92, 24, 106],
+    camPos: [-56, 34, 68],
+    lookAt: [-92, 22, 106],
     era: '1996 低層四合院為女宿（1997 年對調）',
-    desc: '位於平面圖「女宿」位置（男宿西側）。1996 年當時這棟 4 層低層紅磚紅瓦斜頂宿舍為女生宿舍（附設白色拱形老虎窗、庭園與一樓學生餐廳遮雨棚），於 1997 年改名義守大學後才與高層男宿對調。'
+    desc: '位於男宿西側道路對面（平面圖標示「女宿」處）。1996 年當時這棟 4 層低層紅磚紅瓦斜頂宿舍為女生宿舍（附設白色拱形老虎窗、庭園與一樓學生餐廳遮雨棚），於 1997 年改名義守大學後才與高層男宿對調。'
   }
 ];
 
@@ -425,11 +425,11 @@ export function createCampusBuildings(scene, texLib) {
     bus.rotation.y = 0.08;
     gateGroup.add(bus);
 
-    // 北側 2x2 網球／籃球場 (26, -42)
+    // 北側 2x2 網球／籃球場 (28, -48)
     const courtMat = new THREE.MeshStandardMaterial({ map: texLib.courtBlue, roughness: 0.82 });
     const courtsGroup = new THREE.Group();
-    courtsGroup.position.set(32, getTerrainHeight(26, -42) - gy, 36);
-    courtsGroup.rotation.y = -0.25;
+    courtsGroup.position.set(34, getTerrainHeight(28, -48) - gy, 30);
+    courtsGroup.rotation.y = -0.22;
     for (const cx of [-7, 7]) {
       for (const cz of [-9, 9]) {
         const court = new THREE.Mesh(new THREE.BoxGeometry(12, 0.24, 16), courtMat);
@@ -444,13 +444,13 @@ export function createCampusBuildings(scene, texLib) {
   }
 
   // =========================================================================
-  // 2. 泳池（1995 露天標準池 + 萬國旗 + 看台 + 西側附屬棟）
+  // 2. 泳池（1995 露天標準池 + 萬國旗 + 看台 + 西側附屬棟，位於 44, 12）
   // =========================================================================
   {
     const poolGroup = new THREE.Group();
-    const py = getTerrainHeight(38, 4);
-    poolGroup.position.set(38, py + 0.1, 4);
-    poolGroup.rotation.y = -0.32;
+    const py = getTerrainHeight(44, 12);
+    poolGroup.position.set(44, py + 0.1, 12);
+    poolGroup.rotation.y = -0.35;
 
     const mosaicDeckMat = new THREE.MeshStandardMaterial({
       map: texLib.poolDeckMosaic.map,
@@ -493,7 +493,6 @@ export function createCampusBuildings(scene, texLib) {
     }
 
     // 南側紅頂遮陽看台
-    // 看台階梯實心落地（不再一階一階懸空）
     for (let s = 0; s < 4; s++) {
       const topY = 1.0 + s * 0.45;
       const stepH = topY + 1.0;
@@ -505,14 +504,13 @@ export function createCampusBuildings(scene, texLib) {
     standRoof.position.set(0, 4.6, 11.8);
     standRoof.rotation.x = -0.1;
     poolGroup.add(standRoof);
-    // 遮陽棚支撐柱（原本屋頂懸空）
     for (const cx of [-7.5, 0, 7.5]) {
       const col = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.16, 5.75, 8), darkSteelMat);
       col.position.set(cx, 1.875, 13.6);
       poolGroup.add(col);
     }
 
-    // 萬國旗：掛在兩端旗桿之間的繩索上（原本漂浮空中）
+    // 萬國旗
     const buntingColors = [0xd93829, 0x2665a6, 0xf0c52c, 0x2f8a4b, 0xf4f4f2];
     for (let f = 0; f < 14; f++) {
       const fx = -10 + f * 1.5;
@@ -533,7 +531,7 @@ export function createCampusBuildings(scene, texLib) {
       poolGroup.add(bPole);
     }
 
-    // 泳池西側紅瓦斜頂附屬棟 (對應平面圖泳池旁紅屋頂建築)
+    // 泳池西側紅瓦斜頂附屬棟 (對應空拍圖泳池西側紅屋頂建築)
     const poolAnnex = buildRedBrickBlock(13.5, 9.2, 10.5, {
       style: 'academic', repX: 2, repY: 2, hasPitchedRoof: true
     });
@@ -546,28 +544,25 @@ export function createCampusBuildings(scene, texLib) {
   }
 
   // =========================================================================
-  // 3. 活動中心 (位於泳池東側 62, -4：平頂雨遮 + 玻璃三角採光罩 + 噴水池)
+  // 3. 活動中心 (位於泳池東側 76, -2：平頂雨遮 + 玻璃三角採光罩 + 噴水池)
   // =========================================================================
   {
     const actGroup = new THREE.Group();
-    // 東移避開泳池池畔與水面（原本主體穿入泳池東北角）
-    const ay = getTerrainHeight(68, -10);
-    actGroup.position.set(68, ay, -10);
-    actGroup.rotation.y = -0.32;
+    const ay = getTerrainHeight(76, -2);
+    actGroup.position.set(76, ay, -2);
+    actGroup.rotation.y = -0.35;
 
     const main = buildRedBrickBlock(26, 13.0, 20.0, {
       style: 'academic', repX: 4, repY: 2, hasPitchedRoof: true, hasDormers: true
     });
     actGroup.add(main);
 
-    // 屋脊採光天窗：抬高至屋頂上方，避免被斜屋頂吞沒或屋頂尖端穿出
     const skylight = new THREE.Mesh(new THREE.BoxGeometry(8.0, 2.0, 3.4), concreteMat);
     skylight.position.set(0, 17.4, 0);
     const skyGlass = new THREE.Mesh(new THREE.BoxGeometry(8.1, 0.7, 3.5), glassMat);
     skyGlass.position.set(0, 17.75, 0);
     actGroup.add(skylight, skyGlass);
 
-    // 面向北側道路的門廳階梯、雙柱平頂雨遮與玻璃三角採光罩
     const stairs = new THREE.Mesh(new THREE.BoxGeometry(12.2, 0.75, 5.2), concreteMat);
     stairs.position.set(0, 0.37, -12.4);
     actGroup.add(stairs);
@@ -591,7 +586,6 @@ export function createCampusBuildings(scene, texLib) {
     gableMesh.position.set(0, 7.62, -13.6);
     actGroup.add(gableMesh);
 
-    // 圓形噴水池
     const fountain = new THREE.Group();
     fountain.position.set(0, 0, -19.5);
     const basinWall = new THREE.Mesh(
@@ -623,7 +617,6 @@ export function createCampusBuildings(scene, texLib) {
     actGroup.add(fountain);
     animatedParts.eraFountain = fountain;
 
-    // 側邊樓梯電梯塔與雙圓塔
     const sideTower = buildRedBrickBlock(6.8, 16.0, 7.5, {
       style: 'academic', repX: 1, repY: 3, hasPitchedRoof: false
     });
@@ -642,13 +635,13 @@ export function createCampusBuildings(scene, texLib) {
   }
 
   // =========================================================================
-  // 4. 教學大樓（東側口字型四合院建築 92, 48）
+  // 4. 教學大樓（東側口字型四合院建築 104, 48，正門與圓環面向西南側道路）
   // =========================================================================
   {
     const teachGroup = new THREE.Group();
-    const ty = getTerrainHeight(92, 48);
-    teachGroup.position.set(92, ty, 48);
-    teachGroup.rotation.y = -0.62;
+    const ty = getTerrainHeight(104, 48);
+    teachGroup.position.set(104, ty, 48);
+    teachGroup.rotation.y = 2.50;
 
     // 四面圍合「口字型」四合院
     const backWing = buildRedBrickBlock(28, 12.0, 8.2, {
@@ -674,7 +667,6 @@ export function createCampusBuildings(scene, texLib) {
     // 兩側八角轉角小塔
     const octBrick = makeFacadeMat('academic', 1, 2);
     for (const ox of [-14.2, 14.2]) {
-      // 塔身加高至翼樓屋簷之上，塔頂不再與翼樓屋頂互相穿插
       const octBody = new THREE.Mesh(new THREE.CylinderGeometry(3.0, 3.0, 15.0, 8), octBrick);
       octBody.position.set(ox, 7.5, -9.2);
       const octRoof = new THREE.Mesh(new THREE.ConeGeometry(3.6, 2.4, 8), roofMat);
@@ -687,7 +679,7 @@ export function createCampusBuildings(scene, texLib) {
     portal.position.set(0, 4.6, -14.5);
     const portalRoof = new THREE.Mesh(new THREE.ConeGeometry(7.0, 2.5, 4), roofMat);
     portalRoof.rotation.y = Math.PI / 4;
-    portalRoof.scale.set(1.04, 1, 0.465); // 屋頂深度貼合門廳，不再插入前翼樓牆面
+    portalRoof.scale.set(1.04, 1, 0.465);
     portalRoof.position.set(0, 10.4, -14.5);
     teachGroup.add(portal, portalRoof);
 
@@ -699,15 +691,15 @@ export function createCampusBuildings(scene, texLib) {
     innerCourt.position.set(0, 0.15, 0);
     teachGroup.add(innerCourt);
 
-    // 前方半圓形圓環花圃
+    // 西南向正門前圓環花圃（對齊空拍圖教學大樓西南側圓環）
     const gardenRing = new THREE.Mesh(
-      new THREE.CylinderGeometry(6.2, 6.5, 0.45, 24),
+      new THREE.CylinderGeometry(5.2, 5.5, 0.45, 24),
       new THREE.MeshStandardMaterial({ color: 0x457d3d, roughness: 0.9 })
     );
-    gardenRing.position.set(0, 0.22, -23.5);
-    const curbRing = new THREE.Mesh(new THREE.TorusGeometry(6.3, 0.22, 6, 24), concreteMat);
+    gardenRing.position.set(0, 0.22, -21.0);
+    const curbRing = new THREE.Mesh(new THREE.TorusGeometry(5.3, 0.22, 6, 24), concreteMat);
     curbRing.rotation.x = Math.PI / 2;
-    curbRing.position.set(0, 0.4, -23.5);
+    curbRing.position.set(0, 0.4, -21.0);
     teachGroup.add(gardenRing, curbRing);
 
     scene.add(teachGroup);
@@ -715,12 +707,12 @@ export function createCampusBuildings(scene, texLib) {
   }
 
   // =========================================================================
-  // 5. 紅色舊水塔 (26, 86：八角校徽槽體 + X交叉鋼構 + 紅色尖塔鋼架)
+  // 5. 紅色舊水塔 (18, 50：泳池附屬棟南方、百階樓梯東北側山坡地標)
   // =========================================================================
   {
     const wtGroup = new THREE.Group();
-    const wy = getTerrainHeight(26, 86);
-    wtGroup.position.set(26, wy, 86);
+    const wy = getTerrainHeight(18, 50);
+    wtGroup.position.set(18, wy, 50);
 
     const redSteelMat = new THREE.MeshStandardMaterial({ color: 0xc83929, metalness: 0.35, roughness: 0.45 });
     const octTankMat = new THREE.MeshStandardMaterial({ map: texLib.waterTowerEmblem, roughness: 0.42, metalness: 0.18 });
@@ -798,7 +790,7 @@ export function createCampusBuildings(scene, texLib) {
     beacon.position.y = 21.1;
 
     const beaconLight = new THREE.PointLight(0xff3311, 0, 28, 1.5);
-    beaconLight.position.set(26, wy + 21.4, 86);
+    beaconLight.position.set(18, wy + 21.4, 50);
     scene.add(beaconLight);
     animatedParts.beaconLight = beaconLight;
 
@@ -945,12 +937,12 @@ export function createCampusBuildings(scene, texLib) {
   }
 
   // =========================================================================
-  // 6. 行政大樓（綜合大樓）(8, 120：操場正北側 11 層對稱弧形玻璃帷幕地標)
+  // 6. 行政大樓（綜合大樓）(10, 124：操場正北側、百階樓梯頂端，海拔 33.5m 上層同高程平台)
   // =========================================================================
   {
     const adminGroup = new THREE.Group();
-    const ay = getTerrainHeight(8, 120);
-    adminGroup.position.set(8, ay, 120);
+    const ay = getTerrainHeight(10, 124);
+    adminGroup.position.set(10, ay, 124);
     adminGroup.rotation.y = -0.10;
 
     // 主體 11 層對稱紅磚主樓 + 連續紅瓦女兒牆簷口
@@ -970,7 +962,7 @@ export function createCampusBuildings(scene, texLib) {
     rightWing.position.set(19.2, 0, -0.4);
     adminGroup.add(leftWing, rightWing);
 
-    // 中央半圓弧形藍色玻璃帷幕塔身 (對照 215905.png & 222344.png)
+    // 中央半圓弧形藍色玻璃帷幕塔身
     const curtainMat = new THREE.MeshStandardMaterial({
       map: texLib.curtainTower.map,
       roughnessMap: texLib.curtainTower.roughnessMap,
@@ -988,14 +980,12 @@ export function createCampusBuildings(scene, texLib) {
     centralPlinth.position.set(0, -2.0, -6.2);
     adminGroup.add(centralTower, centralPlinth);
 
-    // 塔頂階梯圓鼓與紅瓦錐頂（與中央玻璃圓塔同軸 z = -6.2）
     const drum = new THREE.Mesh(new THREE.CylinderGeometry(4.9, 4.9, 1.6, 24), concreteMat);
     drum.position.set(0, 31.2, -6.2);
     const drumCone = new THREE.Mesh(new THREE.ConeGeometry(5.2, 1.5, 24), roofMat);
     drumCone.position.set(0, 32.7, -6.2);
     adminGroup.add(drum, drumCone);
 
-    // 經典白色斜拉鋼構桁架 (White Diagonal Truss Struts)
     const strutLen = Math.hypot(9.5, 4.0);
     const strutAngle = Math.atan2(4.0, 9.5);
     const strutL = new THREE.Mesh(new THREE.BoxGeometry(strutLen, 0.36, 0.42), concreteMat);
@@ -1006,7 +996,6 @@ export function createCampusBuildings(scene, texLib) {
     strutR.rotation.z = -strutAngle;
     adminGroup.add(strutL, strutR);
 
-    // 中央白色高聳尖塔與夜間頂樓照明燈帶 (215846.png)
     const spireBase = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.9, 2.4, 12), concreteMat);
     spireBase.position.set(0, 34.4, -6.2);
     const spireTop = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.35, 4.2, 8), concreteMat);
@@ -1023,7 +1012,7 @@ export function createCampusBuildings(scene, texLib) {
     roofLightStrip.position.set(0, 29.6, -7.8);
     adminGroup.add(roofLightStrip);
 
-    // 一樓正面挑高迎賓門廊 (直對 125 階長樓梯頂端)
+    // 一樓正面挑高迎賓門廊 (直對百階樓梯頂端)
     const porchRoof = new THREE.Mesh(new THREE.BoxGeometry(13.5, 0.65, 4.0), concreteMat);
     porchRoof.position.set(0, 4.2, -9.6);
     adminGroup.add(porchRoof);
@@ -1038,13 +1027,13 @@ export function createCampusBuildings(scene, texLib) {
   }
 
   // =========================================================================
-  // 7. 科技大樓 (56, 118：與行政大樓保持淨距 + 1995 經典圓柱轉角塔樓 + 柏樹排)
+  // 7. 科技大樓 (66, 118：與行政大樓／圖書館／操場同在海拔 33.5m 平台)
   // =========================================================================
   {
     const engGroup = new THREE.Group();
-    const ey = getTerrainHeight(56, 118);
-    engGroup.position.set(56, ey, 118);
-    engGroup.rotation.y = -0.35;
+    const ey = getTerrainHeight(66, 118);
+    engGroup.position.set(66, ey, 118);
+    engGroup.rotation.y = 0.22;
 
     const main = buildRedBrickBlock(25, 22, 14.0, {
       style: 'academic', repX: 4, repY: 4, hasPitchedRoof: true, hasDormers: true
@@ -1079,7 +1068,7 @@ export function createCampusBuildings(scene, texLib) {
     const cypressMat = new THREE.MeshStandardMaterial({ color: 0x264d24, roughness: 0.88 });
     for (let i = 0; i < 6; i++) {
       const cyTree = new THREE.Mesh(new THREE.ConeGeometry(1.15, 4.6, 10), cypressMat);
-      cyTree.position.set(-8 + i * 3.8, 2.3, -15);
+      cyTree.position.set(-8 + i * 3.8, 2.3, -13);
       engGroup.add(cyTree);
     }
 
@@ -1089,29 +1078,29 @@ export function createCampusBuildings(scene, texLib) {
   }
 
   // =========================================================================
-  // 8. 義守大學圖書館 (78, 148：東南側多層紅磚大樓 + 圓柱紅頂圓廳)
+  // 8. 義守大學圖書館 (94, 154：東南側海拔 33.5m 同高程平台 + 圓柱紅頂圓廳)
   // =========================================================================
   {
     const libGroup = new THREE.Group();
-    const ly = getTerrainHeight(78, 148);
-    libGroup.position.set(78, ly, 148);
-    libGroup.rotation.y = -0.42;
+    const ly = getTerrainHeight(94, 154);
+    libGroup.position.set(94, ly, 154);
+    libGroup.rotation.y = -1.12;
 
     const main = buildRedBrickBlock(22, 18.5, 13.5, {
       style: 'academic', repX: 3, repY: 3, hasPitchedRoof: true, hasDormers: true
     });
     libGroup.add(main);
 
-    // 經典圓形轉角閱讀廳與橘紅錐頂
+    // 經典圓形轉角閱讀廳與橘紅錐頂（位於北端轉角，對齊空拍圖橘紅圓頂位置）
     const rotMat = makeFacadeMat('academic', 2, 3);
     const rotunda = new THREE.Mesh(new THREE.CylinderGeometry(5.2, 5.2, 19.5, 18), rotMat);
-    rotunda.position.set(-10.5, 9.75, -5.5);
+    rotunda.position.set(10.5, 9.75, -5.5);
     const rotPlinth = new THREE.Mesh(new THREE.CylinderGeometry(5.25, 5.25, 4.0, 18), concreteMat);
-    rotPlinth.position.set(-10.5, -2.0, -5.5);
+    rotPlinth.position.set(10.5, -2.0, -5.5);
     const rotCornice = new THREE.Mesh(new THREE.CylinderGeometry(5.5, 5.5, 0.5, 18), concreteMat);
-    rotCornice.position.set(-10.5, 19.6, -5.5);
+    rotCornice.position.set(10.5, 19.6, -5.5);
     const rotDome = new THREE.Mesh(new THREE.ConeGeometry(5.9, 3.6, 18), roofMat);
-    rotDome.position.set(-10.5, 21.6, -5.5);
+    rotDome.position.set(10.5, 21.6, -5.5);
     libGroup.add(rotunda, rotPlinth, rotCornice, rotDome);
 
     scene.add(libGroup);
@@ -1119,15 +1108,15 @@ export function createCampusBuildings(scene, texLib) {
   }
 
   // =========================================================================
-  // 9. 操場與升旗台 (6, 177：海拔 33.5m 與男宿六樓等高；升旗台與觀眾席位在操場南側 +Z)
+  // 9. 操場與升旗台 (6, 170：與行政大樓／科技大樓／圖書館及男宿六樓同在海拔 33.5m)
   // =========================================================================
   {
     const fieldGroup = new THREE.Group();
-    const fy = getTerrainHeight(6, 177);
-    fieldGroup.position.set(6, fy + 0.16, 177);
+    const fy = getTerrainHeight(6, 170);
+    fieldGroup.position.set(6, fy + 0.16, 170);
 
     const fieldPlate = new THREE.Mesh(
-      new THREE.PlaneGeometry(98, 56),
+      new THREE.PlaneGeometry(92, 54),
       new THREE.MeshStandardMaterial({
         map: texLib.sportsField,
         roughness: 0.88,
@@ -1140,7 +1129,7 @@ export function createCampusBuildings(scene, texLib) {
     fieldGroup.add(fieldPlate);
 
     const goalMat = new THREE.MeshStandardMaterial({ color: 0xf4f4f4, roughness: 0.4 });
-    for (const gx of [-22, 22]) {
+    for (const gx of [-21, 21]) {
       const postL = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 2.2, 6), goalMat);
       postL.position.set(gx, 1.1, -3.2);
       const postR = postL.clone();
@@ -1153,14 +1142,12 @@ export function createCampusBuildings(scene, texLib) {
 
     // 升旗台、三支旗桿、紅頂司令台與 5 層實心落地觀眾席：位於操場南側 (+Z)，朝北 (-Z) 面向操場
     const southStand = new THREE.Group();
-    southStand.position.set(0, 0, 29.2);
+    southStand.position.set(0, 0, 28.2);
 
-    // 突出於看台前方的升旗台基座（實心下延接地，不懸空）
     const podium = new THREE.Mesh(new THREE.BoxGeometry(9.0, 2.2, 3.0), concreteMat);
     podium.position.set(0, -0.1, -0.3);
     southStand.add(podium);
 
-    // 5 層實心落地階梯觀眾席（向南逐層升高，面向北側跑道）
     for (let step = 0; step < 5; step++) {
       const topY = (step + 1) * 0.72;
       const h = topY + 1.2;
@@ -1169,7 +1156,6 @@ export function createCampusBuildings(scene, texLib) {
       southStand.add(bench);
     }
 
-    // 後方高處紅頂司令台遮陽棚與支撐柱
     const canopy = new THREE.Mesh(new THREE.BoxGeometry(14.5, 0.32, 4.6), roofMat);
     canopy.position.set(0, 6.6, 6.4);
     canopy.rotation.x = 0.08;
@@ -1180,7 +1166,6 @@ export function createCampusBuildings(scene, texLib) {
       southStand.add(col);
     }
 
-    // 三支旗桿與飄揚旗幟
     [[-2.5, 0xc92c2c], [0, 0xd63628], [2.5, 0x26549a]].forEach(([fx, col], idx) => {
       const hPole = idx === 1 ? 11.8 : 10.2;
       const pole = new THREE.Mesh(
@@ -1203,15 +1188,14 @@ export function createCampusBuildings(scene, texLib) {
   }
 
   // =========================================================================
-  // 10. 1996 校慶拔河活動（位於後面操場草皮中央 6, 177）
+  // 10. 1996 校慶拔河活動（位於後面操場草皮中央 6, 170）
   // =========================================================================
   {
     const tugGroup = new THREE.Group();
-    const ty = getTerrainHeight(6, 177);
-    tugGroup.position.set(6, ty + 0.28, 177);
+    const ty = getTerrainHeight(6, 170);
+    tugGroup.position.set(6, ty + 0.28, 170);
     animatedParts.tugGroup = tugGroup;
 
-    // 22 公尺拔河麻繩
     const rope = new THREE.Mesh(
       new THREE.CylinderGeometry(0.07, 0.07, 23, 8),
       new THREE.MeshStandardMaterial({ color: 0xc29b61, roughness: 0.9 })
@@ -1220,7 +1204,6 @@ export function createCampusBuildings(scene, texLib) {
     rope.position.y = 0.95;
     tugGroup.add(rope);
 
-    // 中線紅布標記
     const centerRibbon = new THREE.Mesh(
       new THREE.BoxGeometry(0.18, 0.5, 0.18),
       new THREE.MeshStandardMaterial({ color: 0xd92b2b })
@@ -1245,7 +1228,6 @@ export function createCampusBuildings(scene, texLib) {
       return p;
     };
 
-    // 兩隊各 8 位學生全力拉繩
     for (const side of [-1, 1]) {
       for (let i = 0; i < 8; i++) {
         const person = makeStudent(side);
@@ -1254,13 +1236,11 @@ export function createCampusBuildings(scene, texLib) {
       }
     }
 
-    // 中央裁判
     const refShirt = new THREE.MeshStandardMaterial({ color: 0xe8a838, roughness: 0.7 });
     const referee = makeStudent(0, refShirt);
     referee.position.set(0, 0, -2.2);
     tugGroup.add(referee);
 
-    // 兩旁加油圍觀同學 (10位)
     for (let s = 0; s < 10; s++) {
       const spec = makeStudent(0);
       spec.position.set(-9 + s * 2.0, 0, s % 2 === 0 ? -4.8 : 4.8);
@@ -1272,14 +1252,14 @@ export function createCampusBuildings(scene, texLib) {
   }
 
   // =========================================================================
-  // 11. 男宿（1996 高層 11 樓雙翼宿舍 + 6 樓通往操場連結橋 + 26 輛路邊機車陣）
+  // 11. 男宿（1996 高層 11 樓雙翼宿舍：東北—西南走向 -50, 128 + 六樓通往操場連結橋 + 機車陣）
   //     註：1996 年高層為男宿，1997 年始與低層女宿對調
   // =========================================================================
   {
     const dormMaleGroup = new THREE.Group();
-    const dy = getTerrainHeight(-39, 127);
-    dormMaleGroup.position.set(-39, dy, 127);
-    dormMaleGroup.rotation.y = 0.52;
+    const dy = getTerrainHeight(-50, 128);
+    dormMaleGroup.position.set(-50, dy, 128);
+    dormMaleGroup.rotation.y = 1.05; // 東北—西南走向，與空拍圖一致
 
     const wingA = buildRedBrickBlock(18.5, 28.5, 12.5, {
       style: 'dorm', repX: 4, repY: 6, hasPitchedRoof: false
@@ -1292,7 +1272,6 @@ export function createCampusBuildings(scene, texLib) {
     wingB.position.set(10.2, 0, 0);
     dormMaleGroup.add(wingA, wingB);
 
-    // 屋頂環繞紅瓦斜邊簷口 + 階梯機房 + 雙藍色圓柱水塔
     const blueTankMat = new THREE.MeshStandardMaterial({ color: 0x2665a6, roughness: 0.4 });
     for (const bx of [-10.2, 10.2]) {
       const mansardF = new THREE.Mesh(new THREE.BoxGeometry(19.6, 1.4, 1.2), roofMat);
@@ -1323,9 +1302,9 @@ export function createCampusBuildings(scene, texLib) {
     }
 
     // 男宿 6 樓與操場之間的水平連結橋：
-    // 男宿 1F 地坪 19.5m，6 樓樓板高約 +14.1m（海拔 33.6m），正對海拔 33.5m 的操場草地邊緣，跨越中間 1F→6F 的山坡
+    // 由南翼 wingA 面向操場側六樓（y = 14.1m，海拔 33.6m）跨越 1F→6F 山坡，水平直通海拔 33.5m 的操場西側草地
     const skybridge = new THREE.Group();
-    const bridgeLen = 15.8;
+    const bridgeLen = 15.2;
     const bridgeW = 3.6;
     const sDeck = new THREE.Mesh(new THREE.BoxGeometry(bridgeW, 0.46, bridgeLen), concreteMat);
     const sRailL = new THREE.Mesh(new THREE.BoxGeometry(0.24, 1.05, bridgeLen - 0.3), concreteMat);
@@ -1335,7 +1314,7 @@ export function createCampusBuildings(scene, texLib) {
 
     const sRoof = new THREE.Mesh(new THREE.BoxGeometry(bridgeW + 0.6, 0.36, bridgeLen + 0.4), roofMat);
     sRoof.position.y = 2.85;
-    for (let pz = -6.2; pz <= 6.2; pz += 4.1) {
+    for (let pz = -5.8; pz <= 5.8; pz += 3.85) {
       const postL = new THREE.Mesh(new THREE.BoxGeometry(0.24, 2.65, 0.24), concreteMat);
       postL.position.set(-bridgeW / 2 + 0.2, 1.45, pz);
       const postR = postL.clone();
@@ -1343,26 +1322,23 @@ export function createCampusBuildings(scene, texLib) {
       skybridge.add(postL, postR);
     }
 
-    // 山坡中段支撐橋墩（由 6 樓橋底向下落入 1F→6F 的斜坡）
-    for (const [pierZ, pierH] of [[-3.5, 12.5], [1.8, 7.5]]) {
+    // 山坡中段支撐橋墩（落入男宿與操場之間 1F→6F 的山坡）
+    for (const [pierZ, pierH] of [[-3.4, 11.5], [1.6, 6.2]]) {
       const pier = new THREE.Mesh(new THREE.BoxGeometry(0.9, pierH, 0.9), concreteMat);
       pier.position.set(0, -pierH / 2, pierZ);
       skybridge.add(pier);
     }
 
-    // 操場端橋台（平順銜接操場外圍綠地，不壓入跑道）
     const abutment = new THREE.Mesh(new THREE.BoxGeometry(bridgeW + 0.8, 1.8, 2.2), concreteMat);
     abutment.position.set(0, -0.75, bridgeLen / 2 - 0.8);
-    // 男宿 6 樓端門廳接口
     const portal = new THREE.Mesh(new THREE.BoxGeometry(bridgeW + 0.5, 3.3, 0.7), concreteMat);
     portal.position.set(0, 1.45, -bridgeLen / 2 + 0.35);
 
     skybridge.add(sDeck, sRailL, sRailR, sRoof, abutment, portal);
-    // 位於男宿後側（面向操場側 +Z），由 wingA 六樓（y = 14.1m）垂直跨越山坡接上操場西側草地
-    skybridge.position.set(-9.8, 14.1, 6.0 + bridgeLen / 2);
+    skybridge.position.set(-13.8, 14.1, 6.0 + bridgeLen / 2);
     dormMaleGroup.add(skybridge);
 
-    // 環湖道路路邊 26 輛機車陣（透過 roadPoint 精準停放於道路西側路肩，避開路緣石與路口）
+    // 道路路邊 26 輛機車陣
     const scooterBodyColors = [0x263547, 0xa82e26, 0xe2e2dc, 0x2b6e56, 0x33383e];
     const seatMat = new THREE.MeshStandardMaterial({ color: 0x161616, roughness: 0.8 });
     const tireMat = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.9 });
@@ -1404,14 +1380,13 @@ export function createCampusBuildings(scene, texLib) {
   }
 
   // =========================================================================
-  // 12. 女宿（1996 低層 4 樓紅瓦斜頂宿舍 + 老虎窗 + 一樓學生餐廳遮雨棚）
-  //     註：1996 年低層為女宿，1997 年始與高層男宿對調
+  // 12. 女宿（1996 低層 4 樓紅瓦斜頂四合院宿舍，位於男宿西側道路對面 -92, 106）
   // =========================================================================
   {
     const dormFemaleGroup = new THREE.Group();
-    const fy = getTerrainHeight(-76, 112);
-    dormFemaleGroup.position.set(-76, fy, 112);
-    dormFemaleGroup.rotation.y = 0.42;
+    const fy = getTerrainHeight(-92, 106);
+    dormFemaleGroup.position.set(-92, fy, 106);
+    dormFemaleGroup.rotation.y = 0.48;
 
     const mainWing = buildRedBrickBlock(24, 11.5, 11.5, {
       style: 'dorm', repX: 4, repY: 2, hasPitchedRoof: true, hasDormers: true
@@ -1427,13 +1402,11 @@ export function createCampusBuildings(scene, texLib) {
     eastWing.position.set(9.5, 0, -12.0);
     dormFemaleGroup.add(mainWing, westWing, eastWing);
 
-    // 一樓學生餐廳遮雨棚
     const canteenAwning = new THREE.Mesh(new THREE.BoxGeometry(7.6, 0.28, 3.2), roofMat);
     canteenAwning.position.set(0, 3.3, -7.2);
     canteenAwning.rotation.x = 0.2;
     dormFemaleGroup.add(canteenAwning);
 
-    // 中庭綠地
     const courtGarden = new THREE.Mesh(
       new THREE.BoxGeometry(10, 0.2, 10),
       new THREE.MeshStandardMaterial({ color: 0x4b8742, roughness: 0.9 })
@@ -1446,12 +1419,12 @@ export function createCampusBuildings(scene, texLib) {
   }
 
   // =========================================================================
-  // 13. 紅瓦木造雙涼亭與九重葛花架 (行政大樓前草坡)
+  // 13. 紅瓦木造雙涼亭與九重葛花架 (百階樓梯西側山坡 -9, 80)
   // =========================================================================
   {
     const pavGroup = new THREE.Group();
-    const py = getTerrainHeight(2, 74);
-    pavGroup.position.set(2, py, 74);
+    const py = getTerrainHeight(-9, 80);
+    pavGroup.position.set(-9, py, 80);
 
     const bougainvilleaMat = new THREE.MeshStandardMaterial({ color: 0xc83a7d, roughness: 0.8 });
 
@@ -1485,15 +1458,15 @@ export function createCampusBuildings(scene, texLib) {
   }
 
   // =========================================================================
-  // 14. 體育館 4D 演進組 (78, -36：1996-1997 施工中結構 ↔ 2001 完工紅瓦體育館)
+  // 14. 體育館 4D 演進組 (52, -22：位於泳池北側／活動中心西北側)
   // =========================================================================
   {
-    const gy = getTerrainHeight(78, -36);
+    const gy = getTerrainHeight(52, -22);
 
-    // 1996–1997 施工中體育館（裸露鋼筋混凝土柱樑、綠色護網、黃色塔吊）
+    // 1996–1997 施工中體育館
     const gymBuildGroup = new THREE.Group();
-    gymBuildGroup.position.set(78, gy, -36);
-    gymBuildGroup.rotation.y = -0.32;
+    gymBuildGroup.position.set(52, gy, -22);
+    gymBuildGroup.rotation.y = -0.35;
 
     const slab1 = new THREE.Mesh(new THREE.BoxGeometry(24, 0.8, 18), concreteMat);
     slab1.position.y = 0.2;
@@ -1537,10 +1510,10 @@ export function createCampusBuildings(scene, texLib) {
     registerClickable(gymBuildGroup, 'gym');
     animatedParts.eraGymBuild = gymBuildGroup;
 
-    // 1999–2001 完工版紅磚紅瓦大屋頂體育館 (對照 體育館2001 222340.png)
+    // 1999–2001 完工版紅磚紅瓦大屋頂體育館
     const gymDoneGroup = new THREE.Group();
-    gymDoneGroup.position.set(78, gy, -36);
-    gymDoneGroup.rotation.y = -0.32;
+    gymDoneGroup.position.set(52, gy, -22);
+    gymDoneGroup.rotation.y = -0.35;
     const gymBody = buildRedBrickBlock(24, 12.5, 18, {
       style: 'academic', repX: 4, repY: 2, hasPitchedRoof: true, roofScale: 1.15
     });

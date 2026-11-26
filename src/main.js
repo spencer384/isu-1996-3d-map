@@ -2,8 +2,8 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
 import { createTextureLibrary } from './textures.js';
-import { createTerrainAndRoads, getTerrainHeight } from './terrain.js?v=20261127c';
-import { createCampusBuildings, LANDMARKS_1996 } from './buildings.js?v=20261127c';
+import { createTerrainAndRoads, getTerrainHeight, ROAD_PATHS } from './terrain.js?v=20261127d';
+import { createCampusBuildings, LANDMARKS_1996 } from './buildings.js?v=20261127d';
 
 const container = document.getElementById('canvas-container');
 const labelsLayer = document.getElementById('labels-layer');
@@ -664,43 +664,21 @@ function drawMinimap() {
   minimapCtx.fillRect(0, 0, w, h);
 
   const toMap = (x, z) => [
-    w / 2 + (x / 310) * w,
-    h / 2 + ((z - 35) / 340) * h
+    w / 2 + (x / 330) * w,
+    h / 2 + ((z - 40) / 360) * h
   ];
 
   minimapCtx.strokeStyle = '#55606e';
-  minimapCtx.lineWidth = 3;
-  minimapCtx.beginPath();
-  [[-95, -130], [-22, -102], [-6, -86], [-5, -52], [-8, -12], [-2, 32], [20, 68], [52, 92], [80, 112]].forEach(([x, z], i) => {
-    const [mx, my] = toMap(x, z);
-    if (i === 0) minimapCtx.moveTo(mx, my);
-    else minimapCtx.lineTo(mx, my);
+  minimapCtx.lineWidth = 2.8;
+  Object.values(ROAD_PATHS).forEach((pts) => {
+    minimapCtx.beginPath();
+    pts.forEach(([x, z], i) => {
+      const [mx, my] = toMap(x, z);
+      if (i === 0) minimapCtx.moveTo(mx, my);
+      else minimapCtx.lineTo(mx, my);
+    });
+    minimapCtx.stroke();
   });
-  minimapCtx.stroke();
-
-  minimapCtx.beginPath();
-  [[-5, -50], [-20, -14], [-34, 28], [-46, 72], [-58, 108]].forEach(([x, z], i) => {
-    const [mx, my] = toMap(x, z);
-    if (i === 0) minimapCtx.moveTo(mx, my);
-    else minimapCtx.lineTo(mx, my);
-  });
-  minimapCtx.stroke();
-
-  minimapCtx.beginPath();
-  [[20, 68], [52, 64], [74, 58]].forEach(([x, z], i) => {
-    const [mx, my] = toMap(x, z);
-    if (i === 0) minimapCtx.moveTo(mx, my);
-    else minimapCtx.lineTo(mx, my);
-  });
-  minimapCtx.stroke();
-
-  minimapCtx.beginPath();
-  [[-46, 72], [-24, 60], [5, 44]].forEach(([x, z], i) => {
-    const [mx, my] = toMap(x, z);
-    if (i === 0) minimapCtx.moveTo(mx, my);
-    else minimapCtx.lineTo(mx, my);
-  });
-  minimapCtx.stroke();
 
   LANDMARKS_1996.forEach((lm) => {
     if (lm.id === 'panorama' || lm.id === 'topdown') return;

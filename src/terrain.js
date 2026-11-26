@@ -4,23 +4,23 @@ import * as THREE from 'three';
  * 125 階長樓梯（行政大樓／綜合大樓前百階）斜面基準線
  * 地形與階梯模型共用，確保草坡不會穿出階梯。
  */
-export const STAIR_LINE = { x1: 12.0, z1: 71.5, x2: 9.5, z2: 96.0, y1: 13.86, y2: 21.65 };
+export const STAIR_LINE = { x1: 2.0, z1: 60.5, x2: 8.5, z2: 102.0, y1: 13.8, y2: 33.5 };
 
 /**
  * 1996 義守大學（高雄工學院）觀音山東麓地形高度函數
- * 對齊 1996年義守大學平面圖.png：
+ * 對齊空拍實景地圖與 1996 平面圖：
  *   X: 東西向 (東為正 +X: 泳池/活動中心/教學大樓/科技大樓/圖書館, 西為負 -X: 男宿/女宿)
  *   Z: 南北向 (北為負 -Z: 校門口/北側球場, 南為正 +Z: 行政大樓/操場/後山)
- *   Y: 海拔高度 (公尺級比例)
+ *   Y: 海拔高度 (黃色圈選區：行政大樓、科技大樓、圖書館、操場皆位於同一高程平台 33.5m，正對男宿 6 樓)
  */
 export function getTerrainHeight(x, z) {
   // 基礎山坡：由北(-Z)向南(+Z)緩升
   let h = 2.5 + Math.max(0, (z + 80) * 0.095);
 
   // 觀音山東西兩側與後方主峰抬升
-  const southRidge = Math.max(0, z - 175) * 0.28;
-  const eastHill = Math.max(0, x - 110) * 0.24;
-  const westHill = Math.max(0, -x - 105) * 0.22;
+  const southRidge = Math.max(0, z - 195) * 0.28;
+  const eastHill = Math.max(0, x - 125) * 0.24;
+  const westHill = Math.max(0, -x - 115) * 0.22;
   h += southRidge + eastHill + westHill;
 
   // 自然山丘起伏
@@ -46,7 +46,7 @@ export function getTerrainHeight(x, z) {
     }
   };
 
-  // 矩形平台（操場用，確保整片跑道與看台四角皆貼地、不懸空）
+  // 矩形平台（確保上層同高度建築群與操場四角皆平整貼地、不懸空）
   const flattenRect = (cx, cz, hx, hz, targetH, feather = 14) => {
     const dx = Math.max(0, Math.abs(x - cx) - hx);
     const dz = Math.max(0, Math.abs(z - cz) - hz);
@@ -76,22 +76,27 @@ export function getTerrainHeight(x, z) {
     }
   };
 
-  flatten(-6, -70, 30, 30, 3.0, 20);      // 1. 校門口 & 警衛室
-  flatten(50, -8, 48, 30, 8.5, 18);       // 2. 泳池 & 活動中心 & 前廣場
-  flatten(78, -36, 22, 18, 7.5, 16);      // 2b. 體育館平台 (1996施工 -> 2001完工)
-  flatten(26, -42, 24, 20, 5.2, 16);      // 3. 北側網球／籃球場（覆蓋於活動中心平台之後）
-  flatten(92, 48, 30, 26, 14.0, 20);      // 4. 教學大樓 (口字型四合院)
-  flatten(26, 86, 18, 16, 17.5, 18);      // 5. 紅色舊水塔草坡
-  flatten(12, 68, 16, 10, 13.8, 14);      // 6. 125 階起點道路平台
-  flatten(8, 114, 30, 17, 21.5, 13);      // 7. 行政大樓（綜合大樓）與前廣場
-  flatten(56, 118, 26, 18, 21.5, 14);     // 8. 科技大樓
-  flatten(82, 148, 20, 18, 22.5, 12);     // 9. 義守大學圖書館
-  flatten(-76, 112, 28, 24, 18.0, 18);    // 11. 女宿（1996 低層）
-  flattenRotatedRect(-39, 127, 21.0, 7.5, 0.52, 19.5, 13); // 10a. 男宿 1F 基地（19.5m）與外圍草坡
-  flattenRect(6, 181, 50, 32, 33.5, 12);  // 12. 操場與南側升旗台（33.5m 正對男宿 6 樓，中間形成 1F→6F 山坡）
-  flattenRotatedRect(-39, 127, 20.5, 7.0, 0.52, 19.5, 4);  // 10b. 確保男宿雙棟四角皆平整落在 1F 地坪
+  flatten(-6, -70, 30, 30, 3.0, 20);       // 1. 校門口 & 警衛室
+  flatten(56, 4, 48, 26, 9.5, 18);         // 2. 泳池 & 活動中心 & 前廣場
+  flatten(52, -22, 22, 16, 8.2, 14);       // 2b. 體育館平台（位於活動中心西北側／泳池北側）
+  flatten(28, -48, 24, 22, 5.5, 16);       // 3. 北側網球／籃球場
+  flatten(104, 48, 28, 24, 15.5, 18);      // 4. 教學大樓 (口字型四合院)
+  flatten(18, 50, 14, 12, 13.5, 14);       // 5. 紅色舊水塔草坡（泳池附屬棟南方山坡）
+  flatten(2, 58, 16, 10, 13.8, 14);        // 6. 百階樓梯起點道路彎道平台
+  flatten(-92, 106, 28, 24, 18.0, 18);     // 11. 女宿（1996 低層，男宿西側道路對面）
+  flattenRotatedRect(-50, 128, 21.0, 8.0, 1.05, 19.5, 13); // 10a. 男宿 1F 基地（19.5m，東北—西南走向）
 
-  // 13. 125 階長樓梯坡道：地面沿階梯斜面下切，避免草坡穿出階梯
+  // 7–9 & 12. 黃色圈選上層同高程平台區（海拔統一為 33.5m，正對男宿 6 樓高度）：
+  // 包含：行政大樓與前廣場、科技大樓、義守大學圖書館、操場與南側升旗台
+  flattenRect(10, 121, 26, 19, 33.5, 12);  // 7. 行政大樓（綜合大樓）與前廣場 (33.5m)
+  flattenRect(66, 118, 22, 16, 33.5, 12);  // 8. 科技大樓 (33.5m)
+  flattenRect(94, 154, 22, 20, 33.5, 12);  // 9. 義守大學圖書館 (33.5m)
+  flattenRect(6, 174, 49, 32, 33.5, 12);   // 12. 操場與南側升旗台 (33.5m)
+
+  // 10b. 確保男宿雙棟四角平整落於 19.5m，使男宿與操場之間形成真實的 1F→6F 山坡
+  flattenRotatedRect(-50, 128, 20.5, 7.0, 1.05, 19.5, 4);
+
+  // 13. 百階樓梯（125 階）坡道：地面沿階梯斜面下切，避免草坡穿出階梯
   {
     const { x1, z1, x2, z2, y1, y2 } = STAIR_LINE;
     const sdx = x2 - x1;
@@ -103,10 +108,10 @@ export function getTerrainHeight(x, z) {
     const vz = z - z1;
     const t = (vx * ux + vz * uz) / len;
     const perp = Math.abs(vx * uz - vz * ux);
-    const w = (1 - smoothstep(4.6, 10, perp)) * smoothstep(-0.12, 0.02, t) * (1 - smoothstep(0.98, 1.12, t));
+    const w = (1 - smoothstep(4.6, 10, perp)) * smoothstep(-0.10, 0.02, t) * (1 - smoothstep(0.98, 1.08, t));
     if (w > 0) {
       const tc = Math.min(1, Math.max(0, t));
-      const target = y1 + (y2 - y1) * tc - 0.12;
+      const target = y1 + (y2 - y1) * tc - 0.14;
       h = THREE.MathUtils.lerp(h, target, w);
     }
   }
@@ -115,13 +120,15 @@ export function getTerrainHeight(x, z) {
 }
 
 export const ROAD_PATHS = {
-  main: [[-95, -130], [-22, -102], [-6, -86], [-5, -52], [-8, -12], [-2, 32], [20, 68], [52, 92], [80, 112]],
-  teaching: [[20, 68], [52, 64], [74, 58]],
-  dormWest: [[-5, -50], [-20, -14], [-34, 28], [-46, 72], [-58, 108]],
-  crossLink: [[-46, 72], [-24, 60], [5, 44]],
+  main: [[-95, -130], [-22, -102], [-6, -86], [-5, -52], [-10, -14], [-8, 28], [2, 58], [34, 72], [68, 82], [108, 108]],
+  teaching: [[68, 82], [84, 68]],
+  dormWest: [[-5, -50], [-20, -14], [-34, 28], [-48, 68], [-62, 108], [-74, 142]],
+  adminWest: [[-8, 28], [-19, 60], [-27, 94], [-29, 124], [-24, 138]],
+  crossLink: [[-48, 68], [-24, 58], [-8, 44]],
+  techLane: [[57, 174], [57, 142], [41, 124]],
 };
 
-const ROAD_HALF_WIDTH = { main: 5.2, teaching: 3.8, dormWest: 4.4, crossLink: 3.6 };
+const ROAD_HALF_WIDTH = { main: 5.2, teaching: 3.8, dormWest: 4.4, adminWest: 3.8, crossLink: 3.4, techLane: 3.0 };
 
 export function isOnRoad(x, z, margin = 0) {
   for (const [name, pts] of Object.entries(ROAD_PATHS)) {
@@ -190,12 +197,12 @@ export function createTerrainAndRoads(scene, texLib) {
     if (isOnRoad(x, z)) {
       c.copy(roadTint);
     } else if (
-      (Math.abs(x - 10) < 26 && Math.abs(z - 102) < 12) ||
-      (Math.abs(x - 73) < 17 && Math.abs(z + 26) < 11) ||
-      (Math.abs(x - 74) < 16 && Math.abs(z - 62) < 12)
+      (Math.abs(x - 10) < 26 && Math.abs(z - 108) < 11) ||
+      (Math.abs(x - 82) < 17 && Math.abs(z + 18) < 11) ||
+      (Math.abs(x - 86) < 16 && Math.abs(z - 64) < 12)
     ) {
       c.copy(plazaTint);
-    } else if (y > 26 || x > 112 || x < -104 || z > 205 || (x > 20 && z < -62)) {
+    } else if (y > 36.5 || x > 128 || x < -118 || z > 212 || (x > 26 && z < -68)) {
       // 觀音山深綠樹林區 (包含 1996 年尚未開發之東北側、東側與西側山坡)
       c.copy(forestTint);
     } else {
@@ -317,7 +324,9 @@ function addRoadRibbons(scene, texLib) {
   buildRibbon(ROAD_PATHS.main, 8.6, true);
   buildRibbon(ROAD_PATHS.teaching, 6.2, false);
   buildRibbon(ROAD_PATHS.dormWest, 7.2, true);
+  buildRibbon(ROAD_PATHS.adminWest, 6.6, true);
   buildRibbon(ROAD_PATHS.crossLink, 6.0, false);
+  buildRibbon(ROAD_PATHS.techLane, 5.4, false);
 }
 
 function addPlazas(scene, texLib) {
@@ -330,19 +339,19 @@ function addPlazas(scene, texLib) {
   const stoneSideMat = new THREE.MeshStandardMaterial({ color: 0xc9bfae, roughness: 0.85 });
   const plazaMats = [stoneSideMat, stoneSideMat, plazaMat, stoneSideMat, stoneSideMat, stoneSideMat];
 
-  // 行政大樓（綜合大樓）前廣場：加厚為石砌平台，避免坡地處懸空；頂面對齊 125 階頂端
-  const adminTop = STAIR_LINE.y2 + 0.01;
-  const adminPlaza = new THREE.Mesh(new THREE.BoxGeometry(48, 5, 15), plazaMats);
-  adminPlaza.position.set(8, adminTop - 2.5, 103.5);
+  // 行政大樓（綜合大樓）前廣場：加厚為石砌平台，頂面對齊百階樓梯頂端（海拔 33.5m）
+  const adminTop = STAIR_LINE.y2 + 0.02;
+  const adminPlaza = new THREE.Mesh(new THREE.BoxGeometry(46, 5, 14), plazaMats);
+  adminPlaza.position.set(9.5, adminTop - 2.5, 108.5);
   adminPlaza.rotation.y = -0.10;
   adminPlaza.receiveShadow = true;
   scene.add(adminPlaza);
 
   // 活動中心前廣場（含噴水池），頂面對齊活動中心地坪
-  const actTop = getTerrainHeight(68, -10) + 0.17;
+  const actTop = getTerrainHeight(76, -2) + 0.17;
   const actPlaza = new THREE.Mesh(new THREE.BoxGeometry(30, 1.2, 18), plazaMats);
-  actPlaza.position.set(73, actTop - 0.6, -26);
-  actPlaza.rotation.y = -0.32;
+  actPlaza.position.set(82, actTop - 0.6, -18);
+  actPlaza.rotation.y = -0.35;
   actPlaza.receiveShadow = true;
   scene.add(actPlaza);
 }
@@ -356,21 +365,21 @@ function addCampusFoliage(scene, texLib) {
 
   const isOccupiedByBuilding = (x, z) => {
     if (Math.abs(x + 6) < 22 && Math.abs(z + 70) < 24) return true;     // 校門口、警衛塔、精神指標
-    if (Math.abs(x - 26) < 22 && Math.abs(z + 42) < 22) return true;    // 北側網球／籃球場
-    if (Math.abs(x - 38) < 31 && Math.abs(z - 4) < 20) return true;     // 泳池、看台與附屬棟
-    if (Math.abs(x - 78) < 18 && Math.abs(z + 36) < 16) return true;    // 體育館
-    if (Math.abs(x - 68) < 24 && Math.abs(z + 12) < 26) return true;    // 活動中心、噴水池與前廣場
-    if (Math.abs(x - 92) < 26 && Math.abs(z - 44) < 28) return true;    // 教學大樓 (口字型) 與圓環
-    if (Math.abs(x - 26) < 12 && Math.abs(z - 86) < 12) return true;    // 紅色舊水塔
-    if (Math.abs(x - 2) < 7 && Math.abs(z - 74) < 6) return true;       // 紅瓦雙涼亭
-    if (Math.abs(x - 10.5) < 10 && z > 66 && z < 104) return true;      // 125 階長樓梯
-    if (Math.abs(x - 8) < 27 && z > 93 && z < 136) return true;         // 行政大樓（綜合大樓）與前廣場
-    if (Math.abs(x - 56) < 25 && Math.abs(z - 118) < 20) return true;   // 科技大樓
-    if (Math.abs(x - 78) < 20 && Math.abs(z - 148) < 20) return true;   // 圖書館
-    if (Math.abs(x - 6) < 57 && Math.abs(z - 180) < 39) return true;    // 操場、南側升旗台與拔河
-    if (Math.abs(x + 39) < 25 && Math.abs(z - 127) < 23) return true;   // 男宿 (1996 高層)
-    if (x > -52 && x < -22 && z > 128 && z < 156) return true;          // 男宿 6F 至操場連結橋廊道（避開樹冠穿模）
-    if (Math.abs(x + 76) < 26 && Math.abs(z - 108) < 26) return true;   // 女宿 (1996 低層)
+    if (Math.abs(x - 28) < 22 && Math.abs(z + 48) < 24) return true;    // 北側網球／籃球場
+    if (Math.abs(x - 44) < 32 && Math.abs(z - 12) < 20) return true;    // 泳池、看台與附屬棟
+    if (Math.abs(x - 52) < 18 && Math.abs(z + 22) < 16) return true;    // 體育館（泳池北側／活動中心西北側）
+    if (Math.abs(x - 76) < 24 && Math.abs(z + 6) < 26) return true;     // 活動中心、噴水池與前廣場
+    if (Math.abs(x - 104) < 26 && Math.abs(z - 52) < 28) return true;   // 教學大樓 (口字型) 與圓環
+    if (Math.abs(x - 18) < 11 && Math.abs(z - 50) < 11) return true;    // 紅色舊水塔
+    if (Math.abs(x + 9) < 8 && Math.abs(z - 80) < 7) return true;       // 紅瓦雙涼亭
+    if (Math.abs(x - 5.5) < 10 && z > 56 && z < 105) return true;       // 百階樓梯（125 階）
+    if (Math.abs(x - 10) < 28 && z > 99 && z < 140) return true;        // 行政大樓（綜合大樓）與前廣場
+    if (Math.abs(x - 66) < 24 && Math.abs(z - 118) < 19) return true;   // 科技大樓
+    if (Math.abs(x - 94) < 22 && Math.abs(z - 154) < 22) return true;   // 圖書館
+    if (Math.abs(x - 6) < 55 && Math.abs(z - 174) < 38) return true;    // 操場、南側升旗台與拔河
+    if (Math.abs(x + 50) < 24 && Math.abs(z - 128) < 25) return true;   // 男宿 (1996 高層)
+    if (x > -58 && x < -32 && z > 136 && z < 156) return true;          // 男宿 6F 至操場連結橋廊道
+    if (Math.abs(x + 92) < 26 && Math.abs(z - 106) < 26) return true;   // 女宿 (1996 低層)
     return false;
   };
 
@@ -449,8 +458,8 @@ function addCampusFoliage(scene, texLib) {
   // B. Taiwanese Royal / Coconut Palms (大王椰子) — 位置已避開校門塔樓、道路與階梯
   const palmSpots = [
     [-17, -66], [6, -68], [-12, -46], [4, -44],
-    [36, -24], [48, -28], [62, -26],
-    [-6, 97], [23, 97], [42, 96]
+    [28, -28], [40, -34], [66, -24],
+    [-8, 102], [26, 102], [44, 104]
   ];
 
   const palmTrunkGeo = new THREE.CylinderGeometry(0.18, 0.32, 7.6, 8);
@@ -509,9 +518,10 @@ function addStreetLamps(scene) {
   // 依道路中心線自動計算路肩位置（車道半寬 + 路緣石 + 1m），路燈不再立於車道或路緣石上
   const lampDefs = [
     ['main', 1, 0.5, 5.8], ['main', 2, 0.5, -5.8], ['main', 3, 0.5, 5.8], ['main', 4, 0.45, -5.8],
-    ['main', 5, 0.5, 5.8], ['main', 6, 0.3, -5.8], ['main', 7, 0.5, 5.8],
+    ['main', 5, 0.5, 5.8], ['main', 6, 0.4, -5.8], ['main', 7, 0.5, 5.8], ['main', 8, 0.5, 5.8],
     ['dormWest', 0, 0.5, 5.2], ['dormWest', 1, 0.5, 5.2], ['dormWest', 2, 0.5, 5.2], ['dormWest', 3, 0.5, 5.2],
-    ['crossLink', 0, 0.5, 4.6], ['teaching', 0, 0.6, 4.8],
+    ['adminWest', 1, 0.5, -4.8], ['adminWest', 2, 0.5, -4.8],
+    ['crossLink', 0, 0.5, 4.6], ['teaching', 0, 0.5, 4.8],
   ];
 
   const streetLampLights = [];
