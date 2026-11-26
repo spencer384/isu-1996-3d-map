@@ -60,6 +60,7 @@ export function getTerrainHeight(x, z) {
 
   flatten(-6, -70, 30, 30, 3.0, 20);      // 1. 校門口 & 警衛室
   flatten(50, -8, 48, 30, 8.5, 18);       // 2. 泳池 & 活動中心 & 前廣場
+  flatten(78, -36, 22, 18, 7.5, 16);      // 2b. 體育館平台 (1996施工 -> 2001完工)
   flatten(26, -42, 24, 20, 5.2, 16);      // 3. 北側網球／籃球場（覆蓋於活動中心平台之後）
   flatten(92, 48, 30, 26, 14.0, 20);      // 4. 教學大樓 (口字型四合院)
   flatten(26, 86, 18, 16, 17.5, 18);      // 5. 紅色舊水塔草坡
@@ -338,6 +339,7 @@ function addCampusFoliage(scene, texLib) {
     if (Math.abs(x + 6) < 22 && Math.abs(z + 70) < 24) return true;     // 校門口、警衛塔、精神指標
     if (Math.abs(x - 26) < 22 && Math.abs(z + 42) < 22) return true;    // 北側網球／籃球場
     if (Math.abs(x - 38) < 31 && Math.abs(z - 4) < 20) return true;     // 泳池、看台與附屬棟
+    if (Math.abs(x - 78) < 18 && Math.abs(z + 36) < 16) return true;    // 體育館
     if (Math.abs(x - 68) < 24 && Math.abs(z + 12) < 26) return true;    // 活動中心、噴水池與前廣場
     if (Math.abs(x - 92) < 26 && Math.abs(z - 44) < 28) return true;    // 教學大樓 (口字型) 與圓環
     if (Math.abs(x - 26) < 12 && Math.abs(z - 86) < 12) return true;    // 紅色舊水塔

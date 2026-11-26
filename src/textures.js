@@ -788,10 +788,10 @@ export function createTextureLibrary(renderer) {
     return tex;
   }
 
-  // 16. Gate Tower Vertical Sign ("高雄工學院" on red brick with white borders)
-  const gateTowerSign = (() => {
+  // 16. Gate Tower Vertical Signs ("高雄工學院" & 1997 "義守大學")
+  const makeGateSign = (chars, seed) => {
     const [c, ctx] = makeCanvas(256, 512);
-    const rand = makeRand(1601);
+    const rand = makeRand(seed);
     ctx.fillStyle = '#9b4436';
     ctx.fillRect(0, 0, 256, 512);
 
@@ -813,12 +813,13 @@ export function createTextureLibrary(renderer) {
     ctx.fillRect(22, 240, 212, 12);
 
     // Bold vertical traditional Chinese white relief text
-    const chars = ['高', '雄', '工', '學', '院'];
-    ctx.font = 'bold 58px "Microsoft JhengHei", serif';
+    ctx.font = chars.length === 4 ? 'bold 64px "Microsoft JhengHei", serif' : 'bold 58px "Microsoft JhengHei", serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
+    const stepY = chars.length === 4 ? 98 : 82;
+    const startY = chars.length === 4 ? 88 : 62;
     chars.forEach((ch, idx) => {
-      const cy = 62 + idx * 82;
+      const cy = startY + idx * stepY;
       ctx.fillStyle = 'rgba(0,0,0,0.35)';
       ctx.fillText(ch, 131, cy + 3);
       ctx.fillStyle = '#f6f4ef';
@@ -826,7 +827,10 @@ export function createTextureLibrary(renderer) {
     });
 
     return finalizeTex(c, { isColor: true, wrap: THREE.ClampToEdgeWrapping, anisotropy: aniso });
-  })();
+  };
+
+  const gateTowerSign = makeGateSign(['高', '雄', '工', '學', '院'], 1601);
+  const gateTowerSignISU = makeGateSign(['義', '守', '大', '學'], 1602);
 
   // 17. Octagonal Water Tower Wrap with Red Bands & School Emblem
   const waterTowerEmblem = (() => {
@@ -1054,6 +1058,7 @@ export function createTextureLibrary(renderer) {
     leafCluster,
     skyEquirect,
     gateTowerSign,
+    gateTowerSignISU,
     waterTowerEmblem,
     spiritEmblem,
     poolDeckMosaic,

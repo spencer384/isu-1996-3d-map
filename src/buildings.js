@@ -56,6 +56,16 @@ export const LANDMARKS_1996 = [
     desc: '緊鄰泳池東側（平面圖標示「活動中心」處），採三層紅磚外牆搭配白柱平頂雨遮門廳、玻璃三角採光罩、屋頂天窗與側邊雙圓塔樓梯塔，門前設有圓形噴水池。當年大一新生入學典禮即在此頂樓禮堂舉辦。'
   },
   {
+    id: 'gym',
+    name: '體育館（1996 施工中 → 2001 完工）',
+    tag: '4D 演進',
+    pos: [78, 15, -36],
+    camPos: [46, 28, -68],
+    lookAt: [78, 11, -36],
+    era: '1996 施工紀實 → 1999 完工啟用',
+    desc: '1993 年尚未動工；1996–1997 年正處於鋼筋混凝土柱樑、鷹架護網與黃色塔吊施工階段；至 1999–2001 年完工為宏偉的紅磚紅瓦大屋頂體育館，一樓並設有學生餐廳。切換下方 4D 時間軸即可親眼見證興建過程！'
+  },
+  {
     id: 'old-teaching',
     name: '教學大樓（口字型四合院建築）',
     tag: '教學',
@@ -325,6 +335,7 @@ export function createCampusBuildings(scene, texLib) {
     const westTower = new THREE.Mesh(new THREE.BoxGeometry(5.2, 8.8, 4.8), towerMats);
     westTower.position.set(-7.8, 4.4, 0);
     gateGroup.add(westTower);
+    animatedParts.gateSignMat = signMat;
 
     const westEaves = new THREE.Mesh(new THREE.BoxGeometry(6.8, 0.55, 6.4), concreteMat);
     westEaves.position.set(-7.8, 8.95, 0);
@@ -531,6 +542,7 @@ export function createCampusBuildings(scene, texLib) {
 
     scene.add(poolGroup);
     registerClickable(poolGroup, 'pool');
+    animatedParts.eraPool = poolGroup;
   }
 
   // =========================================================================
@@ -609,6 +621,7 @@ export function createCampusBuildings(scene, texLib) {
     animatedParts.fountainJet = fJet;
     fountain.add(basinWall, basinRim, fWater, rockery, fJet);
     actGroup.add(fountain);
+    animatedParts.eraFountain = fountain;
 
     // 側邊樓梯電梯塔與雙圓塔
     const sideTower = buildRedBrickBlock(6.8, 16.0, 7.5, {
@@ -1072,6 +1085,7 @@ export function createCampusBuildings(scene, texLib) {
 
     scene.add(engGroup);
     registerClickable(engGroup, 'engineering');
+    animatedParts.eraTech = engGroup;
   }
 
   // =========================================================================
@@ -1450,6 +1464,79 @@ export function createCampusBuildings(scene, texLib) {
     }
 
     scene.add(pavGroup);
+  }
+
+  // =========================================================================
+  // 14. 體育館 4D 演進組 (78, -36：1996-1997 施工中結構 ↔ 2001 完工紅瓦體育館)
+  // =========================================================================
+  {
+    const gy = getTerrainHeight(78, -36);
+
+    // 1996–1997 施工中體育館（裸露鋼筋混凝土柱樑、綠色護網、黃色塔吊）
+    const gymBuildGroup = new THREE.Group();
+    gymBuildGroup.position.set(78, gy, -36);
+    gymBuildGroup.rotation.y = -0.32;
+
+    const slab1 = new THREE.Mesh(new THREE.BoxGeometry(24, 0.8, 18), concreteMat);
+    slab1.position.y = 0.2;
+    const slab2 = new THREE.Mesh(new THREE.BoxGeometry(23.5, 0.55, 17.5), concreteMat);
+    slab2.position.y = 5.2;
+    gymBuildGroup.add(slab1, slab2);
+
+    const rebarMat = new THREE.MeshStandardMaterial({ color: 0x5c4338, metalness: 0.65, roughness: 0.6 });
+    for (let ix = -9; ix <= 9; ix += 4.5) {
+      for (let iz = -7; iz <= 7; iz += 7) {
+        const col = new THREE.Mesh(new THREE.BoxGeometry(0.75, 9.6, 0.75), concreteMat);
+        col.position.set(ix, 4.8, iz);
+        gymBuildGroup.add(col);
+        const rebar = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 1.2, 5), rebarMat);
+        rebar.position.set(ix, 10.2, iz);
+        gymBuildGroup.add(rebar);
+      }
+    }
+
+    const netMat = new THREE.MeshStandardMaterial({
+      color: 0x2f7d4d,
+      transparent: true,
+      opacity: 0.62,
+      side: THREE.DoubleSide,
+      roughness: 0.85,
+    });
+    const scafNet = new THREE.Mesh(new THREE.PlaneGeometry(21, 9.0), netMat);
+    scafNet.position.set(0, 4.8, -9.2);
+    gymBuildGroup.add(scafNet);
+
+    const craneMat = new THREE.MeshStandardMaterial({ color: 0xe2a024, roughness: 0.52, metalness: 0.3 });
+    const mast = new THREE.Mesh(new THREE.BoxGeometry(1.15, 21, 1.15), craneMat);
+    mast.position.set(13.5, 10.5, -6);
+    const jib = new THREE.Mesh(new THREE.BoxGeometry(22, 0.85, 0.9), craneMat);
+    jib.position.set(4.5, 20.5, -6);
+    const cable = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 7.0, 6), darkSteelMat);
+    cable.position.set(-2.5, 16.8, -6);
+    gymBuildGroup.add(mast, jib, cable);
+
+    scene.add(gymBuildGroup);
+    registerClickable(gymBuildGroup, 'gym');
+    animatedParts.eraGymBuild = gymBuildGroup;
+
+    // 1999–2001 完工版紅磚紅瓦大屋頂體育館 (對照 體育館2001 222340.png)
+    const gymDoneGroup = new THREE.Group();
+    gymDoneGroup.position.set(78, gy, -36);
+    gymDoneGroup.rotation.y = -0.32;
+    const gymBody = buildRedBrickBlock(24, 12.5, 18, {
+      style: 'academic', repX: 4, repY: 2, hasPitchedRoof: true, roofScale: 1.15
+    });
+    gymDoneGroup.add(gymBody);
+    const gymSkylight1 = new THREE.Mesh(new THREE.BoxGeometry(3.2, 1.1, 2.2), glassMat);
+    gymSkylight1.position.set(-4.5, 15.6, 0);
+    const gymSkylight2 = gymSkylight1.clone();
+    gymSkylight2.position.set(4.5, 15.6, 0);
+    gymDoneGroup.add(gymSkylight1, gymSkylight2);
+    gymDoneGroup.visible = false;
+
+    scene.add(gymDoneGroup);
+    registerClickable(gymDoneGroup, 'gym');
+    animatedParts.eraGymDone = gymDoneGroup;
   }
 
   return { clickableObjects, animatedParts, nightEmissiveMaterials };

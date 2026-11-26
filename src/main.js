@@ -176,7 +176,7 @@ LANDMARKS_1996.forEach((lm) => {
   pin.className = 'landmark-pin' + (lm.id === activeLandmarkId ? ' active' : '');
   pin.dataset.id = lm.id;
   pin.innerHTML = `
-    <div class="landmark-badge"><span class="dot"></span><span>${lm.name.split('（')[0]}</span></div>
+    <div class="landmark-badge"><span class="dot"></span><span class="pin-text">${lm.name.split('（')[0]}</span></div>
     <div class="landmark-stem"></div>
   `;
   pin.addEventListener('click', (e) => {
@@ -398,6 +398,109 @@ toggleSidebarBtn.addEventListener('click', () => {
 document.getElementById('info-close').addEventListener('click', () => {
   infoCard.classList.add('hidden');
 });
+
+// 8b. 4D Time Axis (1993 -> 1996 -> 1997 -> 2001) & Share URL
+const ERA_DATA = {
+  1993: {
+    label: '1993 年',
+    caption: '高雄工學院創校初期：校門直書「高雄工學院」，科技大樓與泳池尚未興建，高層為男宿、低層為女宿。',
+  },
+  1996: {
+    label: '1996 年',
+    caption: '高雄工學院時期：科技大樓與泳池已啟用，體育館施工中，操場正舉辦 1996/10/16 校慶拔河比賽。',
+  },
+  1997: {
+    label: '1997 年',
+    caption: '改名「義守大學」元年：校門換掛「義守大學」，高層與低層男女宿正式對調，活動中心噴水池啟用。',
+  },
+  2001: {
+    label: '2001 年',
+    caption: '義守大學千禧校園：紅磚紅瓦大屋頂體育館全面完工，構成完整山城大學風貌。',
+  },
+};
+const ERA_ORDER = [1993, 1996, 1997, 2001];
+let currentEra = 1996;
+let play4dTimer = null;
+
+function setEra(year) {
+  const y = ERA_DATA[year] ? Number(year) : 1996;
+  currentEra = y;
+  const info = ERA_DATA[y];
+
+  document.getElementById('era-year-badge').textContent = info.label;
+  document.getElementById('era-caption').textContent = info.caption;
+  document.querySelectorAll('.era-btn').forEach((b) => {
+    b.classList.toggle('active', Number(b.dataset.era) === y);
+  });
+
+  // Update 3D scene visibility & gate sign texture
+  if (animatedParts.gateSignMat) {
+    animatedParts.gateSignMat.map = y >= 1997 ? texLib.gateTowerSignISU : texLib.gateTowerSign;
+    animatedParts.gateSignMat.needsUpdate = true;
+  }
+  if (animatedParts.eraPool) animatedParts.eraPool.visible = y >= 1996;
+  if (animatedParts.eraTech) animatedParts.eraTech.visible = y >= 1996;
+  if (animatedParts.tugGroup) animatedParts.tugGroup.visible = y === 1996;
+  if (animatedParts.eraFountain) animatedParts.eraFountain.visible = y >= 1997;
+  if (animatedParts.eraGymBuild) animatedParts.eraGymBuild.visible = y === 1996 || y === 1997;
+  if (animatedParts.eraGymDone) animatedParts.eraGymDone.visible = y >= 2001;
+
+  // Swap 1996 vs 1997+ dorm labels dynamically
+  const isSwapped = y >= 1997;
+  const malePin = pinElements.get('dorm-male')?.querySelector('.pin-text');
+  const femalePin = pinElements.get('dorm-female')?.querySelector('.pin-text');
+  if (malePin) malePin.textContent = isSwapped ? '女宿（原男宿）' : '男宿';
+  if (femalePin) femalePin.textContent = isSwapped ? '男宿（原女宿）' : '女宿';
+
+  const url = new URL(window.location.href);
+  url.searchParams.set('era', String(y));
+  window.history.replaceState({}, '', url);
+}
+
+document.querySelectorAll('.era-btn').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    if (play4dTimer) {
+      clearInterval(play4dTimer);
+      play4dTimer = null;
+      document.getElementById('btn-play-4d').classList.remove('active');
+      document.getElementById('btn-play-4d').textContent = '▶ 4D 演進';
+    }
+    setEra(Number(btn.dataset.era));
+  });
+});
+
+const btnPlay4d = document.getElementById('btn-play-4d');
+btnPlay4d.addEventListener('click', () => {
+  if (play4dTimer) {
+    clearInterval(play4dTimer);
+    play4dTimer = null;
+    btnPlay4d.classList.remove('active');
+    btnPlay4d.textContent = '▶ 4D 演進';
+  } else {
+    btnPlay4d.classList.add('active');
+    btnPlay4d.textContent = '⏸ 暫停演進';
+    play4dTimer = setInterval(() => {
+      const idx = ERA_ORDER.indexOf(currentEra);
+      setEra(ERA_ORDER[(idx + 1) % ERA_ORDER.length]);
+    }, 2600);
+  }
+});
+
+const shareToast = document.getElementById('share-toast');
+document.getElementById('btn-share').addEventListener('click', async () => {
+  const shareUrl = `${window.location.origin}${window.location.pathname}?era=${currentEra}`;
+  try {
+    await navigator.clipboard.writeText(shareUrl);
+  } catch (_) {
+    // Fallback ignored
+  }
+  shareToast.textContent = `已複製 ${currentEra} 年 4D 校園分享網址！`;
+  shareToast.style.display = 'block';
+  setTimeout(() => { shareToast.style.display = 'none'; }, 2400);
+});
+
+const initEra = Number(new URLSearchParams(window.location.search).get('era'));
+setEra(ERA_DATA[initEra] ? initEra : 1996);
 
 // 9. Keyboard Walk Movement
 const keys = {};
