@@ -529,6 +529,16 @@
       border-color: #ff9c7a;
       color: #fff;
     }
+    .era-btn.era-btn-2026 {
+      grid-column: span 2;
+      background: linear-gradient(135deg, rgba(38, 102, 78, 0.35), rgba(240, 184, 101, 0.28));
+      border-color: rgba(240, 184, 101, 0.45);
+    }
+    .era-btn.era-btn-2026.active {
+      background: linear-gradient(135deg, #2e7d5a, var(--accent));
+      border-color: var(--accent-gold);
+      box-shadow: 0 0 12px rgba(46, 125, 90, 0.45);
+    }
 
     .era-caption {
       font-size: 11px;
@@ -876,7 +886,7 @@
 
   <aside id="sidebar">
     <div class="sidebar-header">
-      <span>校園歷史地標 (16處)</span>
+      <span>校園歷史與現況地標 (20處)</span>
       <div style="display:flex; align-items:center; gap:8px;">
         <span style="font-size:11px; color:var(--accent-gold);">點擊飛往</span>
         <button id="sidebar-close-mobile" aria-label="關閉導覽">✕</button>
@@ -895,6 +905,7 @@
       <button class="era-btn active" data-era="1996">1996 工學院</button>
       <button class="era-btn" data-era="1997">1997 義守元年</button>
       <button class="era-btn" data-era="2001">2001 千禧</button>
+      <button class="era-btn era-btn-2026" data-era="2026">2026 現況</button>
     </div>
     <div class="era-caption" id="era-caption">
       高雄工學院時期：高層為男宿、低層為女宿，體育館施工中，操場正舉辦校慶拔河。
@@ -942,6 +953,6 @@
     </div>
   </div>
 
-  <script type="module" src="./src/main.js?v=20261127e"></script>
+  <script type="module" src="./src/main.js?v=20261127f"></script>
 </body>
 </html>

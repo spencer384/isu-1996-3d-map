@@ -1039,6 +1039,131 @@ export function createTextureLibrary(renderer) {
     };
   })();
 
+  // 23. Zodiac Plaza (星座廣場圓形天球星象石雕鋪面)
+  const zodiacPlaza = (() => {
+    const [c, ctx] = makeCanvas(512, 512);
+    const [bc, bctx] = makeCanvas(512, 512);
+    const rand = makeRand(2026);
+
+    ctx.fillStyle = '#b8b2a8';
+    ctx.fillRect(0, 0, 512, 512);
+    bctx.fillStyle = '#808080';
+    bctx.fillRect(0, 0, 512, 512);
+
+    const cx = 256;
+    const cy = 256;
+    const gradOuter = ctx.createRadialGradient(cx, cy, 180, cx, cy, 252);
+    gradOuter.addColorStop(0, '#1c2d42');
+    gradOuter.addColorStop(0.85, '#2b3f5c');
+    gradOuter.addColorStop(1, '#a8894d');
+    ctx.fillStyle = gradOuter;
+    ctx.beginPath();
+    ctx.arc(cx, cy, 250, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = '#dfba6f';
+    ctx.lineWidth = 3;
+    [248, 232, 200, 160, 110, 60].forEach((r) => {
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.stroke();
+    });
+
+    const gradMedallion = ctx.createRadialGradient(cx, cy, 10, cx, cy, 200);
+    gradMedallion.addColorStop(0, '#1a3a60');
+    gradMedallion.addColorStop(0.7, '#0b1d33');
+    gradMedallion.addColorStop(1, '#05101f');
+    ctx.fillStyle = gradMedallion;
+    ctx.beginPath();
+    ctx.arc(cx, cy, 200, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = 'rgba(223, 186, 111, 0.45)';
+    ctx.lineWidth = 1.5;
+    for (let i = 0; i < 12; i++) {
+      const angle = (i * Math.PI) / 6;
+      ctx.beginPath();
+      ctx.moveTo(cx + Math.cos(angle) * 60, cy + Math.sin(angle) * 60);
+      ctx.lineTo(cx + Math.cos(angle) * 232, cy + Math.sin(angle) * 232);
+      ctx.stroke();
+
+      const sx = cx + Math.cos(angle + Math.PI / 12) * 216;
+      const sy = cy + Math.sin(angle + Math.PI / 12) * 216;
+      ctx.fillStyle = '#fce49f';
+      ctx.beginPath();
+      ctx.arc(sx, sy, 3.5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    const starCoords = [
+      [-80, -90], [-60, -80], [-35, -85], [-10, -70], [10, -45], [30, -50], [15, -75],
+      [70, 70], [90, 80], [105, 90], [60, 110], [115, 60], [80, 130],
+      [-110, 40], [-95, 60], [-75, 45], [-60, 65], [-40, 50],
+      [20, 20], [45, -20], [-30, 25], [10, 60], [-10, -30],
+    ];
+    ctx.strokeStyle = 'rgba(255, 235, 170, 0.55)';
+    ctx.lineWidth = 1;
+    const connectChain = (indices) => {
+      ctx.beginPath();
+      indices.forEach((idx, i) => {
+        const [ox, oy] = starCoords[idx];
+        if (i === 0) ctx.moveTo(cx + ox, cy + oy);
+        else ctx.lineTo(cx + ox, cy + oy);
+      });
+      ctx.stroke();
+    };
+    connectChain([0, 1, 2, 3, 4, 5, 6, 3]);
+    connectChain([7, 8, 9]);
+    connectChain([13, 14, 15, 16, 17]);
+
+    starCoords.forEach(([ox, oy]) => {
+      const sx = cx + ox;
+      const sy = cy + oy;
+      ctx.fillStyle = '#fff4cc';
+      ctx.beginPath();
+      ctx.arc(sx, sy, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255, 244, 204, 0.6)';
+      ctx.lineWidth = 0.8;
+      ctx.beginPath();
+      ctx.moveTo(sx - 4, sy); ctx.lineTo(sx + 4, sy);
+      ctx.moveTo(sx, sy - 4); ctx.lineTo(sx, sy + 4);
+      ctx.stroke();
+    });
+
+    for (let s = 0; s < 120; s++) {
+      const sr = rand() * 190;
+      const sa = rand() * Math.PI * 2;
+      const sx = cx + Math.cos(sa) * sr;
+      const sy = cy + Math.sin(sa) * sr;
+      ctx.fillStyle = rand() > 0.4 ? '#fce8b2' : '#ffffff';
+      ctx.beginPath();
+      ctx.arc(sx, sy, 1.0 + rand() * 1.2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    ctx.fillStyle = '#f5c35b';
+    ctx.beginPath();
+    ctx.arc(cx, cy, 26, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#fff1b8';
+    ctx.lineWidth = 2;
+    for (let r = 0; r < 8; r++) {
+      const ang = (r * Math.PI) / 4;
+      const isCard = r % 2 === 0;
+      const len = isCard ? 48 : 36;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(cx + Math.cos(ang) * len, cy + Math.sin(ang) * len);
+      ctx.stroke();
+    }
+
+    return {
+      map: finalizeTex(c, { isColor: true, anisotropy: aniso }),
+      bumpMap: finalizeTex(bc, { isColor: false, anisotropy: aniso }),
+    };
+  })();
+
   return {
     grass,
     asphaltRoad,
@@ -1065,5 +1190,6 @@ export function createTextureLibrary(renderer) {
     courtBlue,
     graniteSteps,
     curtainTower,
+    zodiacPlaza,
   };
 }

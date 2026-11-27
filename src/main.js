@@ -2,8 +2,8 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
 import { createTextureLibrary } from './textures.js';
-import { createTerrainAndRoads, getTerrainHeight, ROAD_PATHS } from './terrain.js?v=20261127e';
-import { createCampusBuildings, LANDMARKS_1996 } from './buildings.js?v=20261127e';
+import { createTerrainAndRoads, getTerrainHeight, ROAD_PATHS } from './terrain.js?v=20261127f';
+import { createCampusBuildings, LANDMARKS_1996 } from './buildings.js?v=20261127f';
 
 const container = document.getElementById('canvas-container');
 const labelsLayer = document.getElementById('labels-layer');
@@ -163,6 +163,16 @@ function flyToLandmark(lm) {
   activeLandmarkId = lm.id;
   if (mode === 'walk') {
     setMode('orbit');
+  }
+
+  // 點選特定年代獨有地標時，自動平滑切換至對應年份
+  const era2026Landmarks = ['management', 'zodiac-plaza', 'tourism', 'dorm-complex-2026'];
+  if (era2026Landmarks.includes(lm.id) && currentEra !== 2026) {
+    setEra(2026);
+  } else if (lm.id === 'water-tower' && currentEra === 2026) {
+    setEra(1996);
+  } else if (lm.id === 'tug-of-war' && currentEra !== 1996) {
+    setEra(1996);
   }
 
   flyAnim = {
@@ -526,8 +536,12 @@ const ERA_DATA = {
     label: '2001 年',
     caption: '義守大學千禧校園：紅磚紅瓦大屋頂體育館全面完工，構成完整山城大學風貌。',
   },
+  2026: {
+    label: '2026 年',
+    caption: '2026 現況智慧山城：依 Google 地球最新實景，宏偉管理學院大樓、現代化圖資館與材料理工學院、中央星座廣場階梯花園、第一第二學生宿舍群與現代田徑場全面成形。',
+  },
 };
-const ERA_ORDER = [1993, 1996, 1997, 2001];
+const ERA_ORDER = [1993, 1996, 1997, 2001, 2026];
 let currentEra = 1996;
 let play4dTimer = null;
 
@@ -553,13 +567,47 @@ function setEra(year) {
   if (animatedParts.eraFountain) animatedParts.eraFountain.visible = y >= 1997;
   if (animatedParts.eraGymBuild) animatedParts.eraGymBuild.visible = y === 1996 || y === 1997;
   if (animatedParts.eraGymDone) animatedParts.eraGymDone.visible = y >= 2001;
+  if (animatedParts.eraWaterTower) animatedParts.eraWaterTower.visible = y <= 2001;
+  if (animatedParts.beaconLight) animatedParts.beaconLight.visible = y <= 2001;
+  if (animatedParts.era2026) animatedParts.era2026.visible = y === 2026;
 
-  // Swap 1996 vs 1997+ dorm labels dynamically
+  // Swap / update pins dynamically according to era
+  const is2026 = y === 2026;
   const isSwapped = y >= 1997;
+
+  // 2026-only pins
+  const era2026Pins = ['management', 'zodiac-plaza', 'tourism', 'dorm-complex-2026'];
+  era2026Pins.forEach((pid) => {
+    const el = pinElements.get(pid);
+    if (el) el.style.display = is2026 ? '' : 'none';
+  });
+
+  // Historical-only pins
+  const waterTowerPin = pinElements.get('water-tower');
+  if (waterTowerPin) waterTowerPin.style.display = y <= 2001 ? '' : 'none';
+
+  const tugPin = pinElements.get('tug-of-war');
+  if (tugPin) tugPin.style.display = y === 1996 ? '' : 'none';
+
+  // Dynamic pin labels
   const malePin = pinElements.get('dorm-male')?.querySelector('.pin-text');
   const femalePin = pinElements.get('dorm-female')?.querySelector('.pin-text');
-  if (malePin) malePin.textContent = isSwapped ? '女宿（原男宿）' : '男宿';
-  if (femalePin) femalePin.textContent = isSwapped ? '男宿（原女宿）' : '女宿';
+  if (malePin) {
+    malePin.textContent = is2026 ? '學生第一宿舍（高層）' : (isSwapped ? '女宿（原男宿）' : '男宿');
+  }
+  if (femalePin) {
+    femalePin.textContent = is2026 ? '學生第二宿舍（低層）' : (isSwapped ? '男宿（原女宿）' : '女宿');
+  }
+
+  const gymPin = pinElements.get('gym')?.querySelector('.pin-text');
+  if (gymPin) {
+    gymPin.textContent = y >= 2001 ? '體育館（完工）' : (y >= 1996 ? '體育館（施工中）' : '體育館（預定地）');
+  }
+
+  const techPin = pinElements.get('engineering')?.querySelector('.pin-text');
+  if (techPin) {
+    techPin.textContent = is2026 ? '理工學院／材料系' : '科技大樓';
+  }
 
   const url = new URL(window.location.href);
   url.searchParams.set('era', String(y));

@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { getTerrainHeight, STAIR_LINE, roadPoint } from './terrain.js?v=20261127e';
+import { getTerrainHeight, STAIR_LINE, roadPoint } from './terrain.js?v=20261127f';
 
 /**
  * 1996 歷史地標資料庫（1:1 對齊 1996年義守大學平面圖.png 與校友歷史考據）
@@ -164,8 +164,50 @@ export const LANDMARKS_1996 = [
     lookAt: [-92, 22, 106],
     era: '1996 低層四合院為女宿（1997 年對調）',
     desc: '位於男宿西側道路對面（平面圖標示「女宿」處）。1996 年當時這棟 4 層低層紅磚紅瓦斜頂宿舍為女生宿舍（附設白色拱形老虎窗、庭園與一樓學生餐廳遮雨棚），於 1997 年改名義守大學後才與高層男宿對調。'
+  },
+  {
+    id: 'management',
+    name: '管理學院（2026 現況宏偉階梯紅瓦大樓）',
+    tag: '2026 現況',
+    pos: [45, 28, 82],
+    camPos: [15, 42, 48],
+    lookAt: [45, 24, 82],
+    era: '2026 現況 • 管理學院大樓',
+    desc: '依 Google 地球 2026 最新實景：坐落於中央山坡台階地的宏偉管理學院建築群，依山勢層疊而建，採多層紅磚外牆與橘紅瓦歇山大屋頂，設有迎賓門廊、連通步道與綠意庭園，為現代義守大學商管與社會科學重鎮。'
+  },
+  {
+    id: 'zodiac-plaza',
+    name: '星座廣場（2026 現況地標階梯花園）',
+    tag: '2026 現況',
+    pos: [22, 18, 48],
+    camPos: [-8, 28, 22],
+    lookAt: [22, 15, 48],
+    era: '2026 現況 • 星座廣場',
+    desc: '依 Google 地球 2026 最新實景：原 1996 年舊水塔山坡，後整建為校園最著名的「星座廣場」：圓形中央星象圖騰鋪面、依山就勢的半圓形階梯看台、景觀植栽花台與景觀步道，是全校師生聚會、舉辦活動與遠眺校園的代表性景觀。'
+  },
+  {
+    id: 'tourism',
+    name: '觀光餐旅學院（2026 現況觀餐大樓）',
+    tag: '2026 現況',
+    pos: [48, 35, 142],
+    camPos: [18, 46, 112],
+    lookAt: [48, 32, 142],
+    era: '2026 現況 • 觀光餐旅學院',
+    desc: '依 Google 地球 2026 最新實景：坐落於上層平台操場西側與管理學院上方之間，擁有實習餐廳、烘焙工坊與觀光餐旅專業教室，外觀延續經典橘紅瓦斜屋頂與紅磚山城風格。'
+  },
+  {
+    id: 'dorm-complex-2026',
+    name: '學生宿舍群（第一、第二宿舍擴建群）',
+    tag: '2026 現況',
+    pos: [-72, 32, 148],
+    camPos: [-32, 50, 110],
+    lookAt: [-72, 28, 148],
+    era: '2026 現況 • 學生第一、第二宿舍',
+    desc: '依 Google 地球 2026 最新實景：西側山坡大規模依山擴建之學生宿舍建築群，包含數千床位之男女學生宿舍，依山勢層疊而上，並有空中連通道與戶外步道直通上層運動場與各學院。'
   }
 ];
+
+export const LANDMARKS = LANDMARKS_1996;
 
 export function createCampusBuildings(scene, texLib) {
   const clickableObjects = [];
@@ -797,6 +839,7 @@ export function createCampusBuildings(scene, texLib) {
     wtGroup.add(tankBottom, tankMid, tankTopCap, spireLattice, beacon);
     scene.add(wtGroup);
     registerClickable(wtGroup, 'water-tower');
+    animatedParts.eraWaterTower = wtGroup;
   }
 
   // =========================================================================
@@ -1528,6 +1571,369 @@ export function createCampusBuildings(scene, texLib) {
     scene.add(gymDoneGroup);
     registerClickable(gymDoneGroup, 'gym');
     animatedParts.eraGymDone = gymDoneGroup;
+  }
+
+  // =========================================================================
+  // 17. 2026 年現況特有建築群 (星座廣場、管理學院、觀光餐旅、理工材料系擴建、學生宿舍群擴建)
+  // =========================================================================
+  {
+    const era2026Group = new THREE.Group();
+    era2026Group.visible = false;
+
+    // -----------------------------------------------------------------------
+    // 17a. 星座廣場 (Zodiac Plaza) at (22, 48) - 替代 1996 舊水塔山坡
+    // -----------------------------------------------------------------------
+    const zodiacGroup = new THREE.Group();
+    const zy = getTerrainHeight(22, 48);
+    zodiacGroup.position.set(22, zy, 48);
+
+    // 圓形主鋪面台座 (半徑 8.2m，貼附金藍星象天球羅盤紋理)
+    const zodiacBaseMat = new THREE.MeshStandardMaterial({
+      map: texLib.zodiacPlaza.map,
+      bumpMap: texLib.zodiacPlaza.bumpMap,
+      bumpScale: 0.22,
+      roughness: 0.76,
+    });
+    const zodiacDisc = new THREE.Mesh(new THREE.CylinderGeometry(8.2, 8.6, 0.45, 36), zodiacBaseMat);
+    zodiacDisc.position.y = 0.25;
+    zodiacGroup.add(zodiacDisc);
+
+    // 外圍大理石圓環護欄與景觀柱
+    const rimRing = new THREE.Mesh(new THREE.TorusGeometry(8.5, 0.18, 8, 36), concreteMat);
+    rimRing.rotation.x = Math.PI / 2;
+    rimRing.position.y = 0.52;
+    zodiacGroup.add(rimRing);
+
+    // 12 座外圍黃銅星象矮景觀燈柱
+    const goldBronzeMat = new THREE.MeshStandardMaterial({
+      color: 0xdfba6f,
+      metalness: 0.8,
+      roughness: 0.28,
+    });
+    const lightGlowMat = new THREE.MeshStandardMaterial({
+      color: 0xfff6dd,
+      emissive: 0xffdf88,
+      emissiveIntensity: 0.6,
+    });
+    for (let i = 0; i < 12; i++) {
+      const ang = (i * Math.PI) / 6;
+      const lx = Math.cos(ang) * 8.2;
+      const lz = Math.sin(ang) * 8.2;
+      const bollard = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.16, 0.95, 8), darkSteelMat);
+      bollard.position.set(lx, 0.72, lz);
+      const lampCap = new THREE.Mesh(new THREE.SphereGeometry(0.14, 8, 8), lightGlowMat);
+      lampCap.position.set(lx, 1.25, lz);
+      zodiacGroup.add(bollard, lampCap);
+    }
+
+    // 中央日晷與天球渾天儀雕塑 (Armillary Sphere Monument)
+    const pedBase = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.45, 1.1, 8), concreteMat);
+    pedBase.position.y = 1.0;
+    const pedCap = new THREE.Mesh(new THREE.CylinderGeometry(1.35, 1.2, 0.25, 8), concreteMat);
+    pedCap.position.y = 1.65;
+    zodiacGroup.add(pedBase, pedCap);
+
+    // 渾天儀三個交錯黃銅圓環與傾斜時針/晷針
+    const sphereGroup = new THREE.Group();
+    sphereGroup.position.y = 2.65;
+    const ring1 = new THREE.Mesh(new THREE.TorusGeometry(1.05, 0.065, 8, 24), goldBronzeMat);
+    const ring2 = ring1.clone();
+    ring2.rotation.x = Math.PI / 3;
+    const ring3 = ring1.clone();
+    ring3.rotation.y = Math.PI / 3;
+    const gnomon = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.05, 2.5, 8), goldBronzeMat);
+    gnomon.rotation.z = Math.PI / 4;
+    sphereGroup.add(ring1, ring2, ring3, gnomon);
+    zodiacGroup.add(sphereGroup);
+
+    // 廣場後方半圓形弧形景觀階梯看台 (依山勢往上延伸)
+    const stepMat = new THREE.MeshStandardMaterial({
+      map: texLib.graniteSteps.map,
+      bumpMap: texLib.graniteSteps.bumpMap,
+      bumpScale: 0.16,
+      roughness: 0.82,
+    });
+    for (let st = 1; st <= 4; st++) {
+      const rInner = 8.8 + (st - 1) * 1.3;
+      const rOuter = 8.8 + st * 1.3;
+      const arcStep = new THREE.Mesh(
+        new THREE.RingGeometry(rInner, rOuter, 28, 1, Math.PI * 0.15, Math.PI * 1.1),
+        stepMat
+      );
+      arcStep.rotation.x = -Math.PI / 2;
+      arcStep.position.y = 0.25 + st * 0.42;
+      zodiacGroup.add(arcStep);
+    }
+
+    // 階梯花台與常綠柏樹
+    const flowerMat = new THREE.MeshStandardMaterial({ color: 0xdb4437, roughness: 0.85 });
+    const hedgeMat = new THREE.MeshStandardMaterial({ color: 0x2e6b27, roughness: 0.88 });
+    for (let fp = 0; fp < 7; fp++) {
+      const fAng = Math.PI * 0.25 + (fp / 6) * Math.PI * 0.9;
+      const fx = Math.cos(fAng) * 14.5;
+      const fz = Math.sin(fAng) * 14.5;
+      const planter = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.5, 1.2), concreteMat);
+      planter.position.set(fx, 2.2, fz);
+      planter.rotation.y = -fAng;
+      const bush = new THREE.Mesh(new THREE.SphereGeometry(0.55, 8, 8), flowerMat);
+      bush.scale.set(1.4, 0.7, 0.9);
+      bush.position.set(fx, 2.65, fz);
+      zodiacGroup.add(planter, bush);
+
+      if (fp % 2 === 0) {
+        const cypress = new THREE.Mesh(new THREE.ConeGeometry(0.85, 4.2, 8), hedgeMat);
+        cypress.position.set(Math.cos(fAng) * 16.5, 3.8, Math.sin(fAng) * 16.5);
+        zodiacGroup.add(cypress);
+      }
+    }
+
+    era2026Group.add(zodiacGroup);
+    registerClickable(zodiacGroup, 'zodiac-plaza');
+
+    // -----------------------------------------------------------------------
+    // 17b. 管理學院大樓 (College of Management) at (45, 82)
+    // -----------------------------------------------------------------------
+    const mgmtGroup = new THREE.Group();
+    const my = getTerrainHeight(45, 82);
+    mgmtGroup.position.set(45, my, 82);
+    mgmtGroup.rotation.y = -0.32;
+
+    // 中央主棟 (4-5層紅磚歇山大屋頂 + 閣樓老虎窗)
+    const mgmtMain = buildRedBrickBlock(32, 17.5, 18, {
+      style: 'academic',
+      repX: 5,
+      repY: 3,
+      hasPitchedRoof: true,
+      hasDormers: true,
+      roofScale: 1.15,
+    });
+    mgmtGroup.add(mgmtMain);
+
+    // 正面宏偉拱形門廊與迎賓大廳雨遮
+    const portico = new THREE.Mesh(new THREE.BoxGeometry(16, 4.2, 5.0), concreteMat);
+    portico.position.set(0, 2.1, 10.5);
+    const porticoRoof = new THREE.Mesh(new THREE.ConeGeometry(13.2, 2.2, 4), roofMat);
+    porticoRoof.rotation.y = Math.PI / 4;
+    porticoRoof.scale.set(1.25, 1, 0.5);
+    porticoRoof.position.set(0, 5.3, 10.5);
+    for (let c = -6; c <= 6; c += 3) {
+      const col = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, 4.2, 10), concreteMat);
+      col.position.set(c, 2.1, 12.8);
+      mgmtGroup.add(col);
+    }
+    mgmtGroup.add(portico, porticoRoof);
+
+    // 東北側高層階梯配棟 (銜接科技大樓緩坡)
+    const mgmtNorthWing = buildRedBrickBlock(22, 15.0, 15, {
+      style: 'academic',
+      repX: 3,
+      repY: 3,
+      hasPitchedRoof: true,
+      hasDormers: false,
+    });
+    mgmtNorthWing.position.set(24, 2.2, -4.5);
+    mgmtNorthWing.rotation.y = -0.18;
+    mgmtGroup.add(mgmtNorthWing);
+
+    // 西南側景觀翼棟 (面對主幹道與百階)
+    const mgmtSouthWing = buildRedBrickBlock(20, 13.5, 14, {
+      style: 'academic',
+      repX: 3,
+      repY: 2,
+      hasPitchedRoof: true,
+      hasDormers: false,
+    });
+    mgmtSouthWing.position.set(-22, -1.8, 3.5);
+    mgmtSouthWing.rotation.y = 0.12;
+    mgmtGroup.add(mgmtSouthWing);
+
+    // 空中連通走廊
+    const bridgeNE = new THREE.Mesh(new THREE.BoxGeometry(8, 3.2, 3.6), concreteMat);
+    bridgeNE.position.set(14, 8.5, -2);
+    const bridgeSW = new THREE.Mesh(new THREE.BoxGeometry(8, 3.2, 3.6), concreteMat);
+    bridgeSW.position.set(-13, 7.5, 2);
+    mgmtGroup.add(bridgeNE, bridgeSW);
+
+    // 前方中庭標牌
+    const mgmtSign = new THREE.Mesh(new THREE.BoxGeometry(7.5, 1.4, 0.4), darkSteelMat);
+    mgmtSign.position.set(0, 0.8, 15.2);
+    mgmtGroup.add(mgmtSign);
+
+    era2026Group.add(mgmtGroup);
+    registerClickable(mgmtGroup, 'management');
+
+    // -----------------------------------------------------------------------
+    // 17c. 觀光餐旅學院大樓 (Tourism & Hospitality) at (48, 142)
+    // -----------------------------------------------------------------------
+    const tourGroup = new THREE.Group();
+    const toy = getTerrainHeight(48, 142);
+    tourGroup.position.set(48, toy, 142);
+    tourGroup.rotation.y = -0.22;
+
+    const tourBody = buildRedBrickBlock(26, 15.0, 15, {
+      style: 'academic',
+      repX: 4,
+      repY: 3,
+      hasPitchedRoof: true,
+      hasDormers: true,
+      roofScale: 1.05,
+    });
+    tourGroup.add(tourBody);
+
+    // 觀景餐飲實習露台
+    const tourDeck = new THREE.Mesh(new THREE.BoxGeometry(22, 0.6, 6.5), concreteMat);
+    tourDeck.position.set(0, 6.2, 9.8);
+    const tourRail = new THREE.Mesh(new THREE.BoxGeometry(22, 1.0, 0.2), darkSteelMat);
+    tourRail.position.set(0, 7.0, 12.9);
+    tourGroup.add(tourDeck, tourRail);
+
+    era2026Group.add(tourGroup);
+    registerClickable(tourGroup, 'tourism');
+
+    // -----------------------------------------------------------------------
+    // 17d. 材料科學與工程系 / 理工學院擴建棟 at (74, 98)
+    // -----------------------------------------------------------------------
+    const sciGroup = new THREE.Group();
+    const scy = getTerrainHeight(74, 98);
+    sciGroup.position.set(74, scy, 98);
+    sciGroup.rotation.y = -0.42;
+
+    const sciBody = buildRedBrickBlock(24, 15.5, 14, {
+      style: 'academic',
+      repX: 4,
+      repY: 3,
+      hasPitchedRoof: true,
+      hasDormers: false,
+    });
+    sciGroup.add(sciBody);
+
+    // 實驗室屋頂排風與通風設備
+    const ventMat = new THREE.MeshStandardMaterial({ color: 0xb5bfc8, metalness: 0.7, roughness: 0.3 });
+    for (let vx = -6; vx <= 6; vx += 4) {
+      const vent = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.45, 2.2, 8), ventMat);
+      vent.position.set(vx, 17.2, 0);
+      sciGroup.add(vent);
+    }
+
+    // 連通科技大樓空橋
+    const sciBridge = new THREE.Mesh(new THREE.BoxGeometry(10, 3.5, 3.4), concreteMat);
+    sciBridge.position.set(-6, 9.5, 10);
+    sciBridge.rotation.y = 0.6;
+    sciGroup.add(sciBridge);
+
+    era2026Group.add(sciGroup);
+
+    // -----------------------------------------------------------------------
+    // 17e. 國際學院大樓 (International College) at (52, 106)
+    // -----------------------------------------------------------------------
+    const intlGroup = new THREE.Group();
+    const iny = getTerrainHeight(52, 106);
+    intlGroup.position.set(52, iny, 106);
+    intlGroup.rotation.y = -0.36;
+
+    const intlBody = buildRedBrickBlock(18, 12.5, 13, {
+      style: 'academic',
+      repX: 3,
+      repY: 2,
+      hasPitchedRoof: true,
+      hasDormers: false,
+    });
+    intlGroup.add(intlBody);
+
+    // 大面積落地玻璃展廳門廊
+    const intlGlass = new THREE.Mesh(new THREE.BoxGeometry(14, 3.8, 1.2), glassMat);
+    intlGlass.position.set(0, 2.0, 6.8);
+    intlGroup.add(intlGlass);
+
+    era2026Group.add(intlGroup);
+
+    // -----------------------------------------------------------------------
+    // 17f. 學生第一、第二宿舍群擴建 (Dormitory Complex Expansion) at (-72, 148)
+    // -----------------------------------------------------------------------
+    const dormExpGroup = new THREE.Group();
+    const dry = getTerrainHeight(-72, 148);
+    dormExpGroup.position.set(-72, dry, 148);
+    dormExpGroup.rotation.y = 1.05;
+
+    // 擴建 A 棟 (第一宿舍高層翼棟)
+    const dormA = buildRedBrickBlock(26, 16.5, 13, {
+      style: 'dorm',
+      repX: 4,
+      repY: 3,
+      hasPitchedRoof: true,
+      hasDormers: true,
+      roofScale: 1.05,
+    });
+    dormA.position.set(0, 0, 0);
+    dormExpGroup.add(dormA);
+
+    // 擴建 B 棟 (沿坡地順應而下的第二宿舍翼棟)
+    const dormB = buildRedBrickBlock(24, 14.0, 13, {
+      style: 'dorm',
+      repX: 4,
+      repY: 3,
+      hasPitchedRoof: true,
+      hasDormers: false,
+      roofScale: 1.0,
+    });
+    dormB.position.set(-18, -3.2, 12);
+    dormExpGroup.add(dormB);
+
+    // 宿舍空中連通道
+    const dormBridge = new THREE.Mesh(new THREE.BoxGeometry(12, 3.2, 3.2), concreteMat);
+    dormBridge.position.set(-9, 7.5, 6);
+    dormBridge.rotation.y = 0.55;
+    dormExpGroup.add(dormBridge);
+
+    era2026Group.add(dormExpGroup);
+    registerClickable(dormExpGroup, 'dorm-complex-2026');
+
+    // -----------------------------------------------------------------------
+    // 17g. 操場現代化設施 (數位計分大螢幕與現代遮陽棚) at (6, 170)
+    // -----------------------------------------------------------------------
+    const modernTrackGroup = new THREE.Group();
+    const try_ = getTerrainHeight(6, 170);
+    modernTrackGroup.position.set(6, try_, 170);
+
+    // 操場北端現代電子計分牌 (LED Scoreboard Tower)
+    const scoreBoardTower = new THREE.Mesh(new THREE.BoxGeometry(0.8, 7.5, 11), darkSteelMat);
+    scoreBoardTower.position.set(24.5, 4.0, -18);
+    const scoreScreen = new THREE.Mesh(
+      new THREE.PlaneGeometry(10.2, 5.2),
+      new THREE.MeshStandardMaterial({
+        color: 0x0a1420,
+        emissive: 0x1f5c8c,
+        emissiveIntensity: 0.5,
+        roughness: 0.2,
+      })
+    );
+    scoreScreen.rotation.y = -Math.PI / 2;
+    scoreScreen.position.set(24.0, 4.8, -18);
+    modernTrackGroup.add(scoreBoardTower, scoreScreen);
+
+    era2026Group.add(modernTrackGroup);
+
+    // -----------------------------------------------------------------------
+    // 17h. 現代校門迎賓崗亭與電子標牌 at (-6, -78)
+    // -----------------------------------------------------------------------
+    const modernGateGroup = new THREE.Group();
+    const mgy = getTerrainHeight(-6, -78);
+    modernGateGroup.position.set(-6, mgy, -78);
+
+    const modernBooth = new THREE.Mesh(new THREE.BoxGeometry(3.6, 2.8, 3.6), concreteMat);
+    modernBooth.position.set(-0.5, 1.4, 0);
+    const boothRoof = new THREE.Mesh(new THREE.ConeGeometry(3.2, 1.2, 4), roofMat);
+    boothRoof.rotation.y = Math.PI / 4;
+    boothRoof.position.set(-0.5, 3.2, 0);
+    const modernBarrier = new THREE.Mesh(new THREE.BoxGeometry(6.2, 0.2, 0.2), darkSteelMat);
+    modernBarrier.position.set(4.2, 0.9, 0);
+    modernGateGroup.add(modernBooth, boothRoof, modernBarrier);
+
+    era2026Group.add(modernGateGroup);
+
+    // 註冊加入場景並保存於 animatedParts
+    scene.add(era2026Group);
+    animatedParts.era2026 = era2026Group;
   }
 
   return { clickableObjects, animatedParts, nightEmissiveMaterials };
