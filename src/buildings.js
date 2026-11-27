@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { getTerrainHeight, STAIR_LINE, roadPoint } from './terrain.js?v=20261127d';
+import { getTerrainHeight, STAIR_LINE, roadPoint } from './terrain.js?v=20261127e';
 
 /**
  * 1996 歷史地標資料庫（1:1 對齊 1996年義守大學平面圖.png 與校友歷史考據）

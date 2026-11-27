@@ -88,9 +88,10 @@ export function getTerrainHeight(x, z) {
 
   // 7–9 & 12. 黃色圈選上層同高程平台區（海拔統一為 33.5m，正對男宿 6 樓高度）：
   // 包含：行政大樓與前廣場、科技大樓、義守大學圖書館、操場與南側升旗台
-  flattenRect(10, 121, 26, 19, 33.5, 12);  // 7. 行政大樓（綜合大樓）與前廣場 (33.5m)
-  flattenRect(66, 118, 22, 16, 33.5, 12);  // 8. 科技大樓 (33.5m)
-  flattenRect(94, 154, 22, 20, 33.5, 12);  // 9. 義守大學圖書館 (33.5m)
+  flattenRect(10, 121, 25, 18, 33.5, 11);  // 7. 行政大樓（綜合大樓）與前廣場 (33.5m)
+  flattenRect(66, 118, 20, 14, 33.5, 9);   // 8. 科技大樓 (33.5m，收緊邊緣避免頂起東側主幹道)
+  flattenRect(94, 154, 18, 18, 33.5, 9);   // 9. 義守大學圖書館 (33.5m)
+  flattenRect(52, 134, 12, 14, 33.5, 8);   // 9b. 操場與科技大樓間支線車道平台 (33.5m)
   flattenRect(6, 174, 49, 32, 33.5, 12);   // 12. 操場與南側升旗台 (33.5m)
 
   // 10b. 確保男宿雙棟四角平整落於 19.5m，使男宿與操場之間形成真實的 1F→6F 山坡
@@ -120,12 +121,12 @@ export function getTerrainHeight(x, z) {
 }
 
 export const ROAD_PATHS = {
-  main: [[-95, -130], [-22, -102], [-6, -86], [-5, -52], [-10, -14], [-8, 28], [2, 58], [34, 72], [68, 82], [108, 108]],
-  teaching: [[68, 82], [84, 68]],
+  main: [[-95, -130], [-22, -102], [-6, -86], [-5, -52], [-10, -14], [-8, 28], [2, 58], [34, 72], [72, 82], [104, 96], [122, 122]],
+  teaching: [[72, 82], [86, 68]],
   dormWest: [[-5, -50], [-20, -14], [-34, 28], [-48, 68], [-62, 108], [-74, 142]],
-  adminWest: [[-8, 28], [-19, 60], [-27, 94], [-29, 124], [-24, 138]],
+  adminWest: [[-8, 28], [-19, 60], [-27, 94], [-30, 122]],
   crossLink: [[-48, 68], [-24, 58], [-8, 44]],
-  techLane: [[57, 174], [57, 142], [41, 124]],
+  techLane: [[56, 174], [56, 142], [44, 122]],
 };
 
 const ROAD_HALF_WIDTH = { main: 5.2, teaching: 3.8, dormWest: 4.4, adminWest: 3.8, crossLink: 3.4, techLane: 3.0 };
@@ -267,8 +268,8 @@ function addRoadRibbons(scene, texLib) {
 
       const left = p.clone().addScaledVector(side, -width / 2);
       const right = p.clone().addScaledVector(side, width / 2);
-      left.y = getTerrainHeight(left.x, left.z) + ROAD_LIFT;
-      right.y = getTerrainHeight(right.x, right.z) + ROAD_LIFT;
+      left.y = THREE.MathUtils.clamp(getTerrainHeight(left.x, left.z) + ROAD_LIFT, p.y - 0.25, p.y + 0.35);
+      right.y = THREE.MathUtils.clamp(getTerrainHeight(right.x, right.z) + ROAD_LIFT, p.y - 0.25, p.y + 0.35);
 
       positions.push(left.x, left.y, left.z, right.x, right.y, right.z);
       const vCoord = (t * totalLen) / 14;
@@ -276,11 +277,11 @@ function addRoadRibbons(scene, texLib) {
 
       if (withCurbs) {
         const clOut = p.clone().addScaledVector(side, -(width / 2 + 0.45));
-        clOut.y = getTerrainHeight(clOut.x, clOut.z) + ROAD_LIFT + 0.14;
+        clOut.y = left.y - 0.04;
         curbLeftPos.push(left.x, left.y + 0.18, left.z, clOut.x, clOut.y, clOut.z);
 
         const crOut = p.clone().addScaledVector(side, width / 2 + 0.45);
-        crOut.y = getTerrainHeight(crOut.x, crOut.z) + ROAD_LIFT + 0.14;
+        crOut.y = right.y - 0.04;
         curbRightPos.push(right.x, right.y + 0.18, right.z, crOut.x, crOut.y, crOut.z);
       }
 
