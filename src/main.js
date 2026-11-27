@@ -1,9 +1,9 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
-import { createTextureLibrary } from './textures.js';
-import { createTerrainAndRoads, getTerrainHeight, ROAD_PATHS } from './terrain.js?v=20261127f';
-import { createCampusBuildings, LANDMARKS_1996 } from './buildings.js?v=20261127f';
+import { createTextureLibrary } from './textures.js?v=20261127g';
+import { createTerrainAndRoads, getTerrainHeight, ROAD_PATHS } from './terrain.js?v=20261127g';
+import { createCampusBuildings, LANDMARKS_1996 } from './buildings.js?v=20261127g';
 
 const container = document.getElementById('canvas-container');
 const labelsLayer = document.getElementById('labels-layer');
@@ -151,7 +151,7 @@ function setSidebarCollapsed(collapsed) {
   toggleSidebarBtn.classList.toggle('collapsed', collapsed);
   infoCard.classList.toggle('sidebar-collapsed', collapsed);
   if (isMobileQuery.matches) {
-    toggleSidebarBtn.textContent = '📍 地標導覽 (16)';
+    toggleSidebarBtn.textContent = '📍 地標導覽 (20)';
     mobileBackdrop.classList.toggle('visible', !collapsed);
   } else {
     toggleSidebarBtn.textContent = collapsed ? '▶ 導覽' : '◀ 導覽';

@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { getTerrainHeight, STAIR_LINE, roadPoint } from './terrain.js?v=20261127f';
+import { getTerrainHeight, STAIR_LINE, roadPoint } from './terrain.js?v=20261127g';
 
 /**
  * 1996 歷史地標資料庫（1:1 對齊 1996年義守大學平面圖.png 與校友歷史考據）
@@ -1576,7 +1576,7 @@ export function createCampusBuildings(scene, texLib) {
   // =========================================================================
   // 17. 2026 年現況特有建築群 (星座廣場、管理學院、觀光餐旅、理工材料系擴建、學生宿舍群擴建)
   // =========================================================================
-  {
+  try {
     const era2026Group = new THREE.Group();
     era2026Group.visible = false;
 
@@ -1587,10 +1587,12 @@ export function createCampusBuildings(scene, texLib) {
     const zy = getTerrainHeight(22, 48);
     zodiacGroup.position.set(22, zy, 48);
 
-    // 圓形主鋪面台座 (半徑 8.2m，貼附金藍星象天球羅盤紋理)
+    // 圓形主鋪面台座 (半徑 8.2m，貼附金藍星象天球羅盤紋理，支援安全 fallback)
+    const zMap = texLib.zodiacPlaza?.map || texLib.graniteSteps?.map || null;
+    const zBump = texLib.zodiacPlaza?.bumpMap || texLib.graniteSteps?.bumpMap || null;
     const zodiacBaseMat = new THREE.MeshStandardMaterial({
-      map: texLib.zodiacPlaza.map,
-      bumpMap: texLib.zodiacPlaza.bumpMap,
+      map: zMap,
+      bumpMap: zBump,
       bumpScale: 0.22,
       roughness: 0.76,
     });
@@ -1934,6 +1936,8 @@ export function createCampusBuildings(scene, texLib) {
     // 註冊加入場景並保存於 animatedParts
     scene.add(era2026Group);
     animatedParts.era2026 = era2026Group;
+  } catch (err) {
+    console.warn('era2026Group build warning:', err);
   }
 
   return { clickableObjects, animatedParts, nightEmissiveMaterials };
