@@ -3,7 +3,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
 import { createTextureLibrary } from './textures.js?v=20261127g';
 import { createTerrainAndRoads, getTerrainHeight, ROAD_PATHS } from './terrain.js?v=20261127g';
-import { createCampusBuildings, LANDMARKS_1996 } from './buildings.js?v=20261127g';
+import { createCampusBuildings, LANDMARKS_1996 } from './buildings.js?v=20261127h';
 
 const container = document.getElementById('canvas-container');
 const labelsLayer = document.getElementById('labels-layer');
@@ -12,6 +12,13 @@ const infoCard = document.getElementById('info-card');
 const infoEra = document.getElementById('info-era');
 const infoTitle = document.getElementById('info-title');
 const infoDesc = document.getElementById('info-desc');
+const infoPhotoBox = document.getElementById('info-photo-box');
+const infoPhoto = document.getElementById('info-photo');
+const infoPhotoText = document.getElementById('info-photo-text');
+const photoModal = document.getElementById('photo-modal');
+const photoModalImg = document.getElementById('photo-modal-img');
+const photoModalCaption = document.getElementById('photo-modal-caption');
+const photoModalClose = document.getElementById('photo-modal-close');
 const walkHint = document.getElementById('walk-hint');
 const minimapCanvas = document.getElementById('minimap');
 const minimapCtx = minimapCanvas.getContext('2d');
@@ -166,7 +173,7 @@ function flyToLandmark(lm) {
   }
 
   // 點選特定年代獨有地標時，自動平滑切換至對應年份
-  const era2026Landmarks = ['management', 'zodiac-plaza', 'tourism', 'dorm-complex-2026'];
+  const era2026Landmarks = ['management', 'international', 'zodiac-plaza', 'tourism', 'dorm-complex-2026'];
   if (era2026Landmarks.includes(lm.id) && currentEra !== 2026) {
     setEra(2026);
   } else if (lm.id === 'water-tower' && currentEra === 2026) {
@@ -186,6 +193,18 @@ function flyToLandmark(lm) {
   infoEra.textContent = lm.era;
   infoTitle.textContent = lm.name;
   infoDesc.textContent = lm.desc;
+
+  if (infoPhotoBox && infoPhoto) {
+    if (lm.photo) {
+      infoPhoto.src = lm.photo;
+      infoPhoto.alt = lm.name;
+      if (infoPhotoText) infoPhotoText.textContent = lm.photoCaption || '建築實景照片';
+      infoPhotoBox.style.display = 'block';
+    } else {
+      infoPhotoBox.style.display = 'none';
+    }
+  }
+
   infoCard.classList.remove('hidden');
 
   if (isMobileQuery.matches) {
@@ -193,6 +212,25 @@ function flyToLandmark(lm) {
   }
 
   updateActiveUI();
+}
+
+// 實景照片放大檢視彈窗控制
+if (infoPhotoBox && photoModal) {
+  infoPhotoBox.addEventListener('click', () => {
+    if (infoPhoto.src) {
+      photoModalImg.src = infoPhoto.src;
+      photoModalCaption.textContent = infoPhotoText.textContent || infoTitle.textContent;
+      photoModal.classList.add('visible');
+    }
+  });
+  if (photoModalClose) {
+    photoModalClose.addEventListener('click', () => photoModal.classList.remove('visible'));
+  }
+  photoModal.addEventListener('click', (e) => {
+    if (e.target === photoModal || e.target === photoModalClose) {
+      photoModal.classList.remove('visible');
+    }
+  });
 }
 
 // 6. Landmark Sidebar & 3D Projected Pins
@@ -538,7 +576,7 @@ const ERA_DATA = {
   },
   2026: {
     label: '2026 年',
-    caption: '2026 現況智慧山城：依 Google 地球最新實景，宏偉管理學院大樓、現代化圖資館與材料理工學院、中央星座廣場階梯花園、第一第二學生宿舍群與現代田徑場全面成形。',
+    caption: '2026 現況智慧山城：依實景照片與 Google 地球，管理學院、國際學院（第二綜合教學大樓）、工學院材料科學與工程學系、觀光餐旅學院、圖資館與星座廣場全面成形。',
   },
 };
 const ERA_ORDER = [1993, 1996, 1997, 2001, 2026];
@@ -562,7 +600,7 @@ function setEra(year) {
     animatedParts.gateSignMat.needsUpdate = true;
   }
   if (animatedParts.eraPool) animatedParts.eraPool.visible = y >= 1996;
-  if (animatedParts.eraTech) animatedParts.eraTech.visible = y >= 1996;
+  if (animatedParts.eraTech) animatedParts.eraTech.visible = y >= 1996 && y <= 2001;
   if (animatedParts.tugGroup) animatedParts.tugGroup.visible = y === 1996;
   if (animatedParts.eraFountain) animatedParts.eraFountain.visible = y >= 1997;
   if (animatedParts.eraGymBuild) animatedParts.eraGymBuild.visible = y === 1996 || y === 1997;
@@ -576,7 +614,7 @@ function setEra(year) {
   const isSwapped = y >= 1997;
 
   // 2026-only pins
-  const era2026Pins = ['management', 'zodiac-plaza', 'tourism', 'dorm-complex-2026'];
+  const era2026Pins = ['management', 'international', 'zodiac-plaza', 'tourism', 'dorm-complex-2026'];
   era2026Pins.forEach((pid) => {
     const el = pinElements.get(pid);
     if (el) el.style.display = is2026 ? '' : 'none';
@@ -604,9 +642,12 @@ function setEra(year) {
     gymPin.textContent = y >= 2001 ? '體育館（完工）' : (y >= 1996 ? '體育館（施工中）' : '體育館（預定地）');
   }
 
-  const techPin = pinElements.get('engineering')?.querySelector('.pin-text');
-  if (techPin) {
-    techPin.textContent = is2026 ? '理工學院／材料系' : '科技大樓';
+  const techPinEl = pinElements.get('engineering');
+  if (techPinEl) techPinEl.style.display = is2026 ? 'none' : '';
+
+  const teachPin = pinElements.get('old-teaching')?.querySelector('.pin-text');
+  if (teachPin) {
+    teachPin.textContent = is2026 ? '材料科學與工程學系' : '教學大樓';
   }
 
   const url = new URL(window.location.href);

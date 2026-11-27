@@ -390,6 +390,112 @@
       touch-action: pan-y;
     }
 
+    /* Landmark Real Photo Preview */
+    .info-photo-box {
+      margin: 8px 0 10px 0;
+      border-radius: 9px;
+      overflow: hidden;
+      border: 1px solid rgba(240, 184, 101, 0.4);
+      background: rgba(8, 14, 22, 0.7);
+      cursor: pointer;
+      position: relative;
+      transition: transform 0.18s ease, border-color 0.18s ease;
+    }
+
+    .info-photo-box:hover {
+      transform: translateY(-1px);
+      border-color: var(--accent-gold);
+    }
+
+    .info-photo-box img {
+      width: 100%;
+      height: 145px;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.25s ease;
+    }
+
+    .info-photo-box:hover img {
+      transform: scale(1.03);
+    }
+
+    .info-photo-caption {
+      font-size: 11px;
+      color: var(--accent-gold);
+      background: rgba(14, 24, 38, 0.92);
+      padding: 5px 8px;
+      text-align: center;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 5px;
+    }
+
+    /* Fullscreen Photo Modal */
+    #photo-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: rgba(6, 10, 18, 0.88);
+      backdrop-filter: blur(10px);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+
+    #photo-modal.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    #photo-modal img {
+      max-width: 92vw;
+      max-height: 80vh;
+      border-radius: 12px;
+      box-shadow: 0 18px 50px rgba(0, 0, 0, 0.85);
+      border: 2px solid rgba(240, 184, 101, 0.7);
+      object-fit: contain;
+      background: #0d1622;
+    }
+
+    #photo-modal-caption {
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      margin-top: 12px;
+      text-align: center;
+      text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8);
+      max-width: 80vw;
+    }
+
+    #photo-modal-close {
+      position: absolute;
+      top: 20px;
+      right: 24px;
+      background: rgba(255, 255, 255, 0.16);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: #fff;
+      font-size: 22px;
+      border-radius: 50%;
+      width: 44px;
+      height: 44px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s ease;
+    }
+
+    #photo-modal-close:hover {
+      background: rgba(224, 109, 68, 0.8);
+    }
+
     #info-note {
       margin-top: 8px;
       padding-top: 8px;
@@ -923,6 +1029,12 @@
       <span class="info-era" id="info-era">1996 實景考據</span>
       <button class="info-close" id="info-close" aria-label="關閉說明">✕</button>
     </div>
+    <div id="info-photo-box" class="info-photo-box" style="display:none;" title="點擊放大查看實景照片">
+      <img id="info-photo" src="" alt="建築實景照片" />
+      <div id="info-photo-caption" class="info-photo-caption">
+        <span>🔍 點擊看大圖</span> • <span id="info-photo-text">建築實景</span>
+      </div>
+    </div>
     <h2 id="info-title">1996 義守大學（高雄工學院）全景</h2>
     <p id="info-desc">
       1996 年正值「高雄工學院」升格「義守大學」（1997年8月）前夕。地圖依 1996 平面圖與老照片精準還原：包含行政大樓（綜合大樓）與前方 125 階長樓梯、八角紅色舊水塔、口字型教學大樓、科技大樓、活動中心與泳池、高層男宿與低層女宿，以及後方操場校慶拔河盛況。
@@ -930,6 +1042,13 @@
     <div id="info-note">
       操作提示：左鍵拖曳移動、右鍵拖曳旋轉、滾輪縮放；或切換「第一人稱漫步」用 WASD 沿校門上坡道路散步。
     </div>
+  </div>
+
+  <!-- Fullscreen Photo Modal -->
+  <div id="photo-modal">
+    <button id="photo-modal-close" aria-label="關閉照片">✕</button>
+    <img id="photo-modal-img" src="" alt="全螢幕實景照片" />
+    <div id="photo-modal-caption"></div>
   </div>
 
   <div id="walk-hint">
@@ -953,6 +1072,6 @@
     </div>
   </div>
 
-  <script type="module" src="./src/main.js?v=20261127g"></script>
+  <script type="module" src="./src/main.js?v=20261127h"></script>
 </body>
 </html>
