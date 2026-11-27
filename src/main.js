@@ -3,7 +3,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
 import { createTextureLibrary } from './textures.js?v=20261127g';
 import { createTerrainAndRoads, getTerrainHeight, ROAD_PATHS } from './terrain.js?v=20261127g';
-import { createCampusBuildings, LANDMARKS_1996 } from './buildings.js?v=20261127h';
+import { createCampusBuildings, LANDMARKS_1996 } from './buildings.js?v=20261127k';
 
 const container = document.getElementById('canvas-container');
 const labelsLayer = document.getElementById('labels-layer');
@@ -600,12 +600,13 @@ function setEra(year) {
     animatedParts.gateSignMat.needsUpdate = true;
   }
   if (animatedParts.eraPool) animatedParts.eraPool.visible = y >= 1996;
-  if (animatedParts.eraTech) animatedParts.eraTech.visible = y >= 1996 && y <= 2001;
+  if (animatedParts.eraTech) animatedParts.eraTech.visible = y >= 1996;
   if (animatedParts.tugGroup) animatedParts.tugGroup.visible = y === 1996;
   if (animatedParts.eraFountain) animatedParts.eraFountain.visible = y >= 1997;
   if (animatedParts.eraGymBuild) animatedParts.eraGymBuild.visible = y === 1996 || y === 1997;
   if (animatedParts.eraGymDone) animatedParts.eraGymDone.visible = y >= 2001;
   if (animatedParts.eraWaterTower) animatedParts.eraWaterTower.visible = y <= 2001;
+  if (animatedParts.eraFemaleDorm) animatedParts.eraFemaleDorm.visible = y <= 2001;
   if (animatedParts.beaconLight) animatedParts.beaconLight.visible = y <= 2001;
   if (animatedParts.era2026) animatedParts.era2026.visible = y === 2026;
 
@@ -642,8 +643,22 @@ function setEra(year) {
     gymPin.textContent = y >= 2001 ? '體育館（完工）' : (y >= 1996 ? '體育館（施工中）' : '體育館（預定地）');
   }
 
+  const techPinText = pinElements.get('engineering')?.querySelector('.pin-text');
+  if (techPinText) {
+    techPinText.textContent = is2026 ? '科技大樓（電機資訊學院）' : '科技大樓';
+  }
   const techPinEl = pinElements.get('engineering');
-  if (techPinEl) techPinEl.style.display = is2026 ? 'none' : '';
+  if (techPinEl) techPinEl.style.display = y >= 1996 ? '' : 'none';
+
+  const adminPin = pinElements.get('admin')?.querySelector('.pin-text');
+  if (adminPin) {
+    adminPin.textContent = is2026 ? '綜合教學大樓（觀光餐旅學院）' : '行政大樓';
+  }
+
+  const tourismPin = pinElements.get('tourism')?.querySelector('.pin-text');
+  if (tourismPin) {
+    tourismPin.textContent = is2026 ? '義咖啡 (ISU-Cafe)' : '觀光餐旅學院';
+  }
 
   const teachPin = pinElements.get('old-teaching')?.querySelector('.pin-text');
   if (teachPin) {
